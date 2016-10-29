@@ -1,2 +1,5 @@
 package: github.com/jriddick/geoffrey
-import: []
+import:
+- package: github.com/spf13/viper
+- package: github.com/yuin/gopher-lua
+- package: github.com/bndr/gopencils
