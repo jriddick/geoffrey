@@ -42,5 +42,10 @@ func (b *Bot) Handler() {
             b.writer <- fmt.Sprintf("NICK %s", b.config.Nick)
             b.writer <- fmt.Sprintf("USER %s 0 * :%s", b.config.User, b.config.Name)
         }
+
+        // Answer PING with PONG
+        if msg.Command == "PING" {
+            b.writer <- fmt.Sprintf("PONG %s", msg.Trailing)
+        }
     }
 }
