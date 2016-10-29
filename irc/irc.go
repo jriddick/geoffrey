@@ -12,6 +12,7 @@ import (
 	"github.com/jriddick/geoffrey/msg"
 )
 
+// IRC client
 type IRC struct {
 	sync.WaitGroup
 	conn         net.Conn
@@ -23,7 +24,7 @@ type IRC struct {
 	reconnecting bool
 }
 
-
+// NewIRC returns a new IRC client
 func NewIRC(config Config) *IRC {
 	return &IRC{
 		config: config,
@@ -125,6 +126,7 @@ func (m *IRC) loopGet() {
 	}
 }
 
+// Disconnect will disconnect the client
 func (m *IRC) Disconnect() {
 	// Close the channels
 	if m.end != nil {
@@ -151,6 +153,8 @@ func (m *IRC) Disconnect() {
 	m.Wait()
 }
 
+// Connect will connect the client, create new channels if needed
+// and start the handler loops.
 func (m *IRC) Connect() error {
 	// Don't connect if we already are connected
 	if m.conn != nil {
@@ -206,6 +210,7 @@ func (m *IRC) Connect() error {
 	return nil
 }
 
+// Reconnect will disconnect, stop the loops and then call Connect()
 func (m *IRC) Reconnect() error {
 	// Flag as reconnecting
 	m.reconnecting = true
@@ -234,14 +239,17 @@ func (m *IRC) Reconnect() error {
 	return m.Connect()
 }
 
+// Reader returns channel for reading messages
 func (m *IRC) Reader() <-chan *msg.Message {
 	return m.get
 }
 
+// Writer returns channel for sending messages
 func (m *IRC) Writer() chan<- string {
 	return m.put
 }
 
+// Errors returns channel for reading errors
 func (m *IRC) Errors() <-chan error {
 	return m.err
 }
