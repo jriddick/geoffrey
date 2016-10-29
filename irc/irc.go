@@ -1,4 +1,4 @@
-package IRC
+package irc
 
 import (
 	"bufio"
