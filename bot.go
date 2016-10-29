@@ -4,6 +4,7 @@ import (
     "github.com/jriddick/geoffrey/irc"
     "github.com/jriddick/geoffrey/msg"
 	"fmt"
+	"strings"
 )
 
 type Bot struct {
@@ -18,6 +19,7 @@ type Config struct {
     Nick string
     User string
     Name string
+    Channels []string
 }
 
 // Creates a new bot
@@ -47,5 +49,26 @@ func (b *Bot) Handler() {
         if msg.Command == "PING" {
             b.writer <- fmt.Sprintf("PONG %s", msg.Trailing)
         }
+
+        // Join channels when ready
+        if msg.Command == irc.RPL_WELCOME {
+            for _, channel := range b.config.Channels {
+                b.Join(channel)
+            }
+        }
     }
+}
+
+func (b *Bot) Send(channel, msg string) {
+    b.writer <- fmt.Sprintf("PRIVMSG %s :%s", channel, msg)
+}
+
+func (b *Bot) Join(channel string) {
+    // Make sure we have a hashtag
+    if !strings.HasPrefix(channel, "#") {
+        channel = "#" + channel
+    }
+
+    // Send the join command
+    b.writer <- fmt.Sprintf("JOIN %s", channel)
 }
