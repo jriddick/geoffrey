@@ -1,4 +1,4 @@
-package irc
+package IRC
 
 import (
 	"bufio"
@@ -12,7 +12,7 @@ import (
 	"github.com/jriddick/geoffrey/msg"
 )
 
-type Irc struct {
+type IRC struct {
 	sync.WaitGroup
 	conn         net.Conn
 	get          chan *msg.Message
@@ -23,13 +23,14 @@ type Irc struct {
 	reconnecting bool
 }
 
-func NewIRC(config Config) *Irc {
-	return &Irc{
+
+func NewIRC(config Config) *IRC {
+	return &IRC{
 		config: config,
 	}
 }
 
-func (m *Irc) loop_put() {
+func (m *IRC) loopPut() {
 	defer m.Done()
 
 	for {
@@ -77,7 +78,7 @@ func (m *Irc) loop_put() {
 	}
 }
 
-func (m *Irc) loop_get() {
+func (m *IRC) loopGet() {
 	defer m.Done()
 
 	// Reader for the connection
@@ -124,7 +125,7 @@ func (m *Irc) loop_get() {
 	}
 }
 
-func (m *Irc) Disconnect() {
+func (m *IRC) Disconnect() {
 	// Close the channels
 	if m.end != nil {
 		close(m.end)
@@ -150,7 +151,7 @@ func (m *Irc) Disconnect() {
 	m.Wait()
 }
 
-func (m *Irc) Connect() error {
+func (m *IRC) Connect() error {
 	// Don't connect if we already are connected
 	if m.conn != nil {
 		return fmt.Errorf("connection already active")
@@ -199,13 +200,13 @@ func (m *Irc) Connect() error {
 
 	// Start the loops
 	m.Add(2)
-	go m.loop_get()
-	go m.loop_put()
+	go m.loopGet()
+	go m.loopPut()
 
 	return nil
 }
 
-func (m *Irc) Reconnect() error {
+func (m *IRC) Reconnect() error {
 	// Flag as reconnecting
 	m.reconnecting = true
 
@@ -233,14 +234,14 @@ func (m *Irc) Reconnect() error {
 	return m.Connect()
 }
 
-func (m *Irc) Reader() <-chan *msg.Message {
+func (m *IRC) Reader() <-chan *msg.Message {
 	return m.get
 }
 
-func (m *Irc) Writer() chan<- string {
+func (m *IRC) Writer() chan<- string {
 	return m.put
 }
 
-func (m *Irc) Errors() <-chan error {
+func (m *IRC) Errors() <-chan error {
 	return m.err
 }
