@@ -4,16 +4,23 @@ import (
 	"fmt"
 	"strings"
 
+	"log"
+
 	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/msg"
 )
 
+// MessageHandler is the function type for
+// message handlers
+type MessageHandler func(*Bot, msg.Message)
+
 // Bot is the structure for an IRC bot
 type Bot struct {
-	client *irc.IRC
-	writer chan<- string
-	reader <-chan *msg.Message
-	config Config
+	client          *irc.IRC
+	writer          chan<- string
+	reader          <-chan *msg.Message
+	config          Config
+	messageHandlers []MessageHandler
 }
 
 // Config is the configuration structure for Bot
@@ -61,6 +68,9 @@ func (b *Bot) Connect() error {
 // Handler will start processing messages
 func (b *Bot) Handler() {
 	for msg := range b.reader {
+		// Log all messages
+		log.Println(msg.String())
+
 		// Send nick and user after connecting
 		if msg.Trailing == "*** Looking up your hostname..." {
 			b.writer <- fmt.Sprintf("NICK %s", b.config.Nick)
@@ -81,6 +91,16 @@ func (b *Bot) Handler() {
 			}
 			continue
 		}
+
+		// Let our handlers handle PRIVMSG
+		if msg.Command == "PRIVMSG" {
+			go func() {
+				for _, handler := range b.messageHandlers {
+					handler(b, *msg)
+				}
+			}()
+			continue
+		}
 	}
 }
 
@@ -98,4 +118,9 @@ func (b *Bot) Join(channel string) {
 
 	// Send the join command
 	b.writer <- fmt.Sprintf("JOIN %s", channel)
+}
+
+// OnMessage registeres a new PRIVMSG handler
+func (b *Bot) OnMessage(handler MessageHandler) {
+	b.messageHandlers = append(b.messageHandlers, handler)
 }
