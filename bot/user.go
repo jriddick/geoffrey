@@ -1,4 +1,4 @@
-package geoffrey
+package bot
 
 // User represents an IRC user
 type User struct {

@@ -1,4 +1,4 @@
-package geoffrey
+package bot
 
 // Channel represents an IRC channel
 type Channel struct {

@@ -1,4 +1,4 @@
-package geoffrey
+package bot
 
 import (
 	"fmt"
@@ -173,4 +173,9 @@ func (b *Bot) AddChannel(channel string) {
 // OnMessage registeres a new PRIVMSG handler
 func (b *Bot) OnMessage(handler MessageHandler) {
 	b.messageHandlers = append(b.messageHandlers, handler)
+}
+
+// Close will close the bot
+func (b *Bot) Close() {
+	b.client.Disconnect()
 }
