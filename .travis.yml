@@ -1,0 +1,22 @@
+language: go
+go:
+    - 1.6
+    - 1.7
+    - tip
+
+addons:
+    apt:
+        packages:
+            - inspircd
+
+install:
+    - go get -v github.com/Masterminds/glide
+    - glide install
+    - mkdir logs
+
+before_script:
+    - inspircd --config inspircd.conf
+    - go vet $(glide nv)
+
+script:
+    - go test $(glide nv)
