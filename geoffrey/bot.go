@@ -12,7 +12,7 @@ import (
 
 // MessageHandler is the function type for
 // message handlers
-type MessageHandler func(*Bot, msg.Message)
+type MessageHandler func(*Bot, *Channel, User, string)
 
 // Bot is the structure for an IRC bot
 type Bot struct {
@@ -21,6 +21,7 @@ type Bot struct {
 	reader          <-chan *msg.Message
 	config          Config
 	messageHandlers []MessageHandler
+	channels        map[string]*Channel
 }
 
 // Config is the configuration structure for Bot
@@ -45,7 +46,8 @@ func NewBot(config Config) *Bot {
 			Secure:             config.Secure,
 			InsecureSkipVerify: config.InsecureSkipVerify,
 		}),
-		config: config,
+		config:   config,
+		channels: make(map[string]*Channel),
 	}
 
 	return bot
@@ -92,11 +94,45 @@ func (b *Bot) Handler() {
 			continue
 		}
 
+		// Handle JOINs
+		if msg.Command == "JOIN" {
+			// Add the channel if we just joined it
+			if msg.Prefix.Name == b.config.Nick {
+				// Add the channel
+				b.AddChannel(msg.Trailing)
+			} else {
+				// Add the user
+				b.channels[msg.Trailing].AddUser(msg.Prefix.Name)
+			}
+		}
+
+		// Check if this is a name reply
+		if msg.Command == irc.RPL_NAMREPLY {
+			for _, nick := range strings.Split(msg.Trailing, " ") {
+				if nick != b.config.Nick {
+					b.channels[msg.Params[2]].AddUser(nick)
+				}
+			}
+		}
+
+		// Handle PARTs
+		if msg.Command == "PART" {
+			// Remove the user
+			b.channels[msg.Params[0]].RemoveUser(msg.Prefix.Name)
+		}
+
 		// Let our handlers handle PRIVMSG
 		if msg.Command == "PRIVMSG" {
+			// Get the channel
+			channel := b.channels[msg.Params[0]]
+
+			// Get the sender
+			sender := channel.Users[msg.Prefix.Name]
+
+			// Run the handlers
 			go func() {
 				for _, handler := range b.messageHandlers {
-					handler(b, *msg)
+					go handler(b, channel, sender, msg.Trailing)
 				}
 			}()
 			continue
@@ -118,6 +154,20 @@ func (b *Bot) Join(channel string) {
 
 	// Send the join command
 	b.writer <- fmt.Sprintf("JOIN %s", channel)
+}
+
+// AddChannel will add channel to list of joined channels
+func (b *Bot) AddChannel(channel string) {
+	// Make sure we do not replace any existing channels
+	if _, ok := b.channels[channel]; ok {
+		return
+	}
+
+	// Add the channel to the list
+	b.channels[channel] = &Channel{
+		Name: channel,
+		bot:  b,
+	}
 }
 
 // OnMessage registeres a new PRIVMSG handler
