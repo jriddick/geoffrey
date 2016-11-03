@@ -19,3 +19,7 @@ before_script:
 
 script:
     - go test $(glide nv)
+
+cache:
+    directories:
+        - vendor
