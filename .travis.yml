@@ -4,10 +4,9 @@ go:
     - 1.7
     - tip
 
-addons:
-    apt:
-        packages:
-            - inspircd
+before_install:
+    - sudo apt-get -qq update
+    - sudo apt-get install -y inspircd
 
 install:
     - go get -v github.com/Masterminds/glide
