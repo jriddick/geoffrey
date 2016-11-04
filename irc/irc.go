@@ -93,20 +93,20 @@ func (m *IRC) loopGet() {
 			raw, err := reader.ReadString('\n')
 
 			if err != nil {
-				// Ignore any errors during reconnect
 				if !m.reconnecting {
-					m.err <- err
-				}
+					// We continue on timeout
+					if err, ok := err.(net.Error); ok && err.Timeout() {
+						// Increase the amount of timeouts
+						timeouts++
 
-				// We continue on timeout
-				if err, ok := err.(net.Error); ok && err.Timeout() {
-					// Increase the amount of timeouts
-					timeouts++
-
-					// Only continue if we haven't reached the limit
-					if timeouts < m.config.TimeoutLimit {
-						continue
+						// Only continue if we haven't reached the limit
+						if timeouts < m.config.TimeoutLimit {
+							continue
+						}
 					}
+
+					// Send the error
+					m.err <- err
 				}
 
 				return
