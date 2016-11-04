@@ -2,59 +2,65 @@ package geoffrey
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/jriddick/geoffrey/bot"
+	"github.com/yuin/gluamapper"
 	"github.com/yuin/gopher-lua"
 )
 
-// Register will globally register this module
-func Register(L *lua.LState) {
-	L.RegisterModule("geoffrey", exports)
+var (
+	bots = make(map[string]*bot.Bot)
+)
+
+// Geoffrey module handles the creation, start, stop and
+// cleanup of bots.
+type Geoffrey struct {
 }
 
-var exports = map[string]lua.LGFunction{
-	"add": add,
+// NewGeoffrey returns a new Geoffrey module
+func NewGeoffrey() *Geoffrey {
+	return &Geoffrey{}
 }
 
-func add(L *lua.LState) int {
+// Register will register the module to the lua state
+func (g *Geoffrey) Register(L *lua.LState) {
+	L.RegisterModule("geoffrey", map[string]lua.LGFunction{
+		"add": g.Add,
+	})
+}
+
+// Shutdown will stop all running bots
+func (g *Geoffrey) Shutdown() {
+	for _, bot := range bots {
+		bot.Close()
+	}
+}
+
+// Add will create and start a new bot
+func (g *Geoffrey) Add(L *lua.LState) int {
 	// Get the table
 	table := L.ToTable(-1)
 
-	// Get all table rows
-	hostname := table.RawGetString("Hostname")
-	port := table.RawGetString("Port")
-	secure := table.RawGetString("Secure")
-	verify := table.RawGetString("InsecureSkipVerify")
-	nick := table.RawGetString("Nick")
-	user := table.RawGetString("User")
-	name := table.RawGetString("Name")
+	// The bot configuration
+	var config bot.Config
 
-	// Check the types of all parameters
-	if hostname.Type() != lua.LTString {
-		log.Errorf("hostname must be 'string' but it was '%s'", hostname.Type().String())
+	// Map the configuration
+	if err := gluamapper.Map(table, &config); err != nil {
+		log.Fatalln(err)
 	}
 
-	if port.Type() != lua.LTNumber {
-		log.Errorf("port must be 'number' but it was '%s'", port.Type().String())
-	}
+	// Create the bot
+	bots[L.ToString(1)] = bot.NewBot(config)
 
-	if secure.Type() != lua.LTBool {
-		log.Errorf("secure must be 'boolean' but it was '%s'", secure.Type().String())
-	}
+	// Connect
+	bots[L.ToString(1)].Connect()
 
-	if verify.Type() != lua.LTBool {
-		log.Errorf("insecureSkipVerify must be 'boolean' but it was '%s'", verify.Type().String())
-	}
+	// Add logger handler
+	bots[L.ToString(1)].OnMessage(func(bot *bot.Bot, channel *bot.Channel, user bot.User, msg string) {
+		log.Debugln(msg)
+	})
 
-	if nick.Type() != lua.LTString {
-		log.Errorf("nick must be 'string' but it was '%s'", nick.Type().String())
-	}
-
-	if user.Type() != lua.LTString {
-		log.Errorf("use must be 'string' but it was '%s'", user.Type().String())
-	}
-
-	if name.Type() != lua.LTString {
-		log.Errorf("name must be 'string' but it was '%s'", name.Type().String())
-	}
+	// Run the handler
+	bots[L.ToString(1)].Handler()
 
 	return 0
 }
