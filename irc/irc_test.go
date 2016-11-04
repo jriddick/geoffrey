@@ -33,17 +33,19 @@ func IRCDaemonReg(conn net.Listener, result chan []byte) {
 	// Write some data
 	client.Write([]byte(":geoffrey.com NOTICE Auth :*** Looking up your hostname...\r\n"))
 
-	// Wait until we get some data
-	reader := bufio.NewReader(client)
-	msg, _, _ := reader.ReadLine()
+	go func() {
+		// Wait until we get some data
+		reader := bufio.NewReader(client)
+		msg, _, _ := reader.ReadLine()
 
-	log.Println("Message Read: ", string(msg))
+		log.Println("Message Read: ", string(msg))
 
-	// Return RPL_WELCOME
-	client.Write([]byte(":geoffrey.com 001 Geoffrey :Welcome to the Geoffrey IRC Network!\r\n"))
+		// Return RPL_WELCOME
+		client.Write([]byte(":geoffrey.com 001 Geoffrey :Welcome to the Geoffrey IRC Network!\r\n"))
 
-	// Send what we got on the channel
-	result <- msg
+		// Send what we got on the channel
+		result <- msg
+	}()
 }
 
 func IRCDaemonRec(conn net.Listener) {
