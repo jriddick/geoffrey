@@ -28,7 +28,7 @@ type IRC struct {
 func NewIRC(config Config) *IRC {
 	return &IRC{
 		config: config,
-		get:    make(chan *msg.Message, 100),
+		get:    make(chan *msg.Message),
 		put:    make(chan string, 100),
 		end:    make(chan struct{}),
 		err:    make(chan error, 100),
@@ -42,13 +42,7 @@ func (m *IRC) loopPut() {
 		select {
 		case <-m.end:
 			return
-		case msg, ok := <-m.put:
-			// Make sure we received a value
-			if !ok {
-				m.err <- fmt.Errorf("send channel is invalid")
-				return
-			}
-
+		case msg := <-m.put:
 			// We do not send any empty values
 			if msg == "" {
 				m.err <- fmt.Errorf("tried to send empty message")
@@ -61,7 +55,7 @@ func (m *IRC) loopPut() {
 			}
 
 			// Set the timeout
-			m.conn.SetWriteDeadline(time.Now().Add(time.Second * 2))
+			m.conn.SetWriteDeadline(time.Now().Add(m.config.Timeout))
 
 			// Send the message to the server
 			_, err := m.conn.Write([]byte(msg))
@@ -84,13 +78,16 @@ func (m *IRC) loopGet() {
 	// Reader for the connection
 	reader := bufio.NewReaderSize(m.conn, 1024)
 
+	// The current amount of timeouts
+	timeouts := 0
+
 	for {
 		select {
 		case <-m.end:
 			return
 		default:
 			// Set the read timeout
-			m.conn.SetReadDeadline(time.Now().Add(time.Second * 2))
+			m.conn.SetReadDeadline(time.Now().Add(m.config.Timeout))
 
 			// Fetch the message from the server
 			raw, err := reader.ReadString('\n')
@@ -99,6 +96,17 @@ func (m *IRC) loopGet() {
 				// Ignore any errors during reconnect
 				if !m.reconnecting {
 					m.err <- err
+				}
+
+				// We continue on timeout
+				if err, ok := err.(net.Error); ok && err.Timeout() {
+					// Increase the amount of timeouts
+					timeouts++
+
+					// Only continue if we haven't reached the limit
+					if timeouts < m.config.TimeoutLimit {
+						continue
+					}
 				}
 
 				return

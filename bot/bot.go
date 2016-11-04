@@ -2,9 +2,11 @@ package bot
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
+	"time"
+
+	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/msg"
 )
@@ -45,6 +47,8 @@ func NewBot(config Config) *Bot {
 			Port:               config.Port,
 			Secure:             config.Secure,
 			InsecureSkipVerify: config.InsecureSkipVerify,
+			Timeout:            time.Second * 2,
+			TimeoutLimit:       5,
 		}),
 		config:   config,
 		channels: make(map[string]*Channel),
@@ -73,12 +77,15 @@ func (b *Bot) Handler() {
 	for {
 		select {
 		case <-b.stop:
+			// Send quit message
+			b.writer <- "QUIT :Closed"
+
 			// Disconnect the client
 			b.client.Disconnect()
 			break
 		case msg := <-b.reader:
 			// Log all messages
-			log.Println(msg.String())
+			log.Debugln(msg.String())
 
 			// Send nick and user after connecting
 			if msg.Trailing == "*** Looking up your hostname..." {
@@ -89,7 +96,7 @@ func (b *Bot) Handler() {
 
 			// Answer PING with PONG
 			if msg.Command == "PING" {
-				b.writer <- fmt.Sprintf("PONG %s", msg.Trailing)
+				b.writer <- fmt.Sprintf("PONG :%s", msg.Trailing)
 				continue
 			}
 
