@@ -72,7 +72,7 @@ var _ = Describe("Irc", func() {
 		for {
 			line := <-reader
 
-			if line.Command == RPL_WELCOME {
+			if line != nil && line.Command == RPL_WELCOME {
 				break
 			}
 		}
