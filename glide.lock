@@ -1,12 +1,59 @@
-hash: 8a716f09a3f31b93fb313ed3562de8239e36f59afcb918134cb7e536eee99989
-updated: 2016-11-04T17:36:35.6478638+01:00
+hash: e33887e0c2b38afb1686ba648ea94d5f460bc7d13664f9ec510a849c1f861fdf
+updated: 2016-11-04T17:58:46.7719956+01:00
 imports:
 - name: github.com/bndr/gopencils
   version: 102f2a4200dcd5b943fcd09fe0098cae05f3b627
+- name: github.com/mitchellh/mapstructure
+  version: f3009df150dadf309fdee4a54ed65c124afad715
 - name: github.com/Sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
 - name: github.com/spf13/viper
   version: 651d9d916abc3c3d6a91a12549495caba5edffd2
+- name: github.com/yuin/gluamapper
+  version: d836955830e75240d46ce9f0e6d148d94f2e1d3a
 - name: github.com/yuin/gopher-lua
   version: d0d5dd3565a9f3c86ff5bc42a0b1cc9e5bfcf55e
-testImports: []
+  subpackages:
+  - ast
+  - parse
+  - pm
+- name: golang.org/x/sys
+  version: c200b10b5d5e122be351b67af224adc6128af5bf
+  subpackages:
+  - unix
+testImports:
+- name: github.com/onsi/ginkgo
+  version: a8ccd817611666211fdf6e6a752174a0db8374a8
+  subpackages:
+  - config
+  - internal/codelocation
+  - internal/containernode
+  - internal/failer
+  - internal/leafnodes
+  - internal/remote
+  - internal/spec
+  - internal/specrunner
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters
+  - reporters/stenographer
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
+  - types
+- name: github.com/onsi/gomega
+  version: d6ea11462a5e887f44c322f3c8cdda78d5a05117
+  subpackages:
+  - format
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/oraclematcher
+  - internal/testingtsupport
+  - matchers
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
+  - types
+- name: gopkg.in/yaml.v2
+  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
