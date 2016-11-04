@@ -70,8 +70,7 @@ var _ = Describe("Irc", func() {
 		writer <- "USER geoffrey 0 * :geoffrey"
 
 		for {
-			line, ok := <-reader
-			Expect(ok).To(BeTrue())
+			line := <-reader
 
 			if line.Command == RPL_WELCOME {
 				break
