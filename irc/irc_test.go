@@ -28,24 +28,24 @@ func IRCDaemonReg(conn net.Listener, result chan []byte) {
 		log.Fatalln(err)
 	}
 
-	log.Println("Connection Established")
-
-	// Write some data
-	client.Write([]byte(":geoffrey.com NOTICE Auth :*** Looking up your hostname...\r\n"))
-
-	go func() {
+	go func(c net.Conn) {
 		// Wait until we get some data
-		reader := bufio.NewReader(client)
-		msg, _, _ := reader.ReadLine()
+		reader := bufio.NewReader(c)
+		msg, _ := reader.ReadString('\n')
 
-		log.Println("Message Read: ", string(msg))
+		log.Println("Message Read: ", msg)
 
 		// Return RPL_WELCOME
 		client.Write([]byte(":geoffrey.com 001 Geoffrey :Welcome to the Geoffrey IRC Network!\r\n"))
 
 		// Send what we got on the channel
-		result <- msg
-	}()
+		result <- []byte(msg)
+	}(client)
+
+	log.Println("Connection Established")
+
+	// Write some data
+	client.Write([]byte(":geoffrey.com NOTICE Auth :*** Looking up your hostname...\r\n"))
 }
 
 func IRCDaemonRec(conn net.Listener) {
