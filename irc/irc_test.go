@@ -52,4 +52,29 @@ var _ = Describe("Irc", func() {
 		close(done)
 	}, 2)
 
+	It("should be able to register to the server", func(done Done) {
+		By("connecting to the server")
+		Expect(client.Connect()).NotTo(HaveOccurred())
+
+		By("getting the reader and writer")
+		reader := client.Reader()
+		Expect(reader).NotTo(BeNil())
+		writer := client.Writer()
+		Expect(writer).NotTo(BeNil())
+
+		By("sending nick and user")
+		writer <- "NICK geoffrey"
+		writer <- "USER geoffrey 0 * :geoffrey"
+
+		for {
+			line, ok := <-reader
+			Expect(ok).To(BeTrue())
+
+			if line.Command == RPL_WELCOME {
+				break
+			}
+		}
+
+		close(done)
+	}, 2)
 })
