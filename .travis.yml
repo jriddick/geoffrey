@@ -6,13 +6,15 @@ go:
 
 install:
   - go get -v github.com/Masterminds/glide
+  - go get -v github.com/onsi/ginkgo/ginkgo
+  - go get -v github.com/onsi/gomega
   - glide install
 
 before_script:
   - go vet $(glide nv)
 
 script:
-  - go test $(glide nv)
+  - ginkgo -v irc
 
 cache:
   directories:
