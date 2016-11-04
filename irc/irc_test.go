@@ -19,6 +19,8 @@ var _ = Describe("Irc", func() {
 			Port:               6697,
 			Secure:             false,
 			InsecureSkipVerify: false,
+			Timeout:            30,
+			TimeoutLimit:       5,
 		}
 		emp = Config{}
 		client = NewIRC(cfg)
