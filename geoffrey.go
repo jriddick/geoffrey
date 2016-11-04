@@ -3,21 +3,18 @@ package main
 import (
 	"os"
 
-	"github.com/Sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/modules/geoffrey"
+	"github.com/yuin/gluamapper"
 	"github.com/yuin/gopher-lua"
-)
-
-var (
-	log = logrus.New()
 )
 
 func init() {
 	// Output to stderr
-	log.Out = os.Stderr
+	log.SetOutput(os.Stderr)
+}
 
-	// Set minimum log level
-	log.Level = logrus.DebugLevel
+type config struct {
 }
 
 func main() {
@@ -31,8 +28,19 @@ func main() {
 	// Add the geoffrey module
 	geoffrey.Register(state)
 
+	// Load const.lua
+	if err := state.DoFile("const.lua"); err != nil {
+		log.Fatalln(err)
+	}
+
 	// Load config.lua
 	if err := state.DoFile("config.lua"); err != nil {
+		log.Fatalln(err)
+	}
+
+	// Map the configuration struct
+	var cfg config
+	if err := gluamapper.Map(state.GetGlobal("config").(*lua.LTable), &cfg); err != nil {
 		log.Fatalln(err)
 	}
 
