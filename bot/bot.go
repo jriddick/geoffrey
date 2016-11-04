@@ -36,6 +36,9 @@ type Config struct {
 	User               string
 	Name               string
 	Channels           []string
+	Timeout            int
+	TimeoutLimit       int
+	ReconnectLimit     int
 }
 
 // NewBot creates a new bot
@@ -47,8 +50,8 @@ func NewBot(config Config) *Bot {
 			Port:               config.Port,
 			Secure:             config.Secure,
 			InsecureSkipVerify: config.InsecureSkipVerify,
-			Timeout:            time.Second * 2,
-			TimeoutLimit:       5,
+			Timeout:            time.Second * time.Duration(config.Timeout),
+			TimeoutLimit:       config.TimeoutLimit,
 		}),
 		config:   config,
 		channels: make(map[string]*Channel),
