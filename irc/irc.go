@@ -28,6 +28,10 @@ type IRC struct {
 func NewIRC(config Config) *IRC {
 	return &IRC{
 		config: config,
+		get:    make(chan *msg.Message, 100),
+		put:    make(chan string, 100),
+		end:    make(chan struct{}),
+		err:    make(chan error, 100),
 	}
 }
 
@@ -45,11 +49,6 @@ func (m *IRC) loopPut() {
 				return
 			}
 
-			if m.conn == nil {
-				m.err <- fmt.Errorf("no connection active open")
-				return
-			}
-
 			// We do not send any empty values
 			if msg == "" {
 				m.err <- fmt.Errorf("tried to send empty message")
@@ -62,7 +61,7 @@ func (m *IRC) loopPut() {
 			}
 
 			// Set the timeout
-			m.conn.SetWriteDeadline(time.Now().Add(time.Second * 30))
+			m.conn.SetWriteDeadline(time.Now().Add(time.Second * 2))
 
 			// Send the message to the server
 			_, err := m.conn.Write([]byte(msg))
@@ -90,10 +89,8 @@ func (m *IRC) loopGet() {
 		case <-m.end:
 			return
 		default:
-			if m.conn != nil {
-				// Set the read timeout
-				m.conn.SetReadDeadline(time.Now().Add(time.Second * 30))
-			}
+			// Set the read timeout
+			m.conn.SetReadDeadline(time.Now().Add(time.Second * 2))
 
 			// Fetch the message from the server
 			raw, err := reader.ReadString('\n')
@@ -108,9 +105,7 @@ func (m *IRC) loopGet() {
 			}
 
 			// Reset the timeout
-			if m.conn != nil {
-				m.conn.SetReadDeadline(time.Time{})
-			}
+			m.conn.SetReadDeadline(time.Time{})
 
 			// Parse the message
 			msg, err := msg.ParseMessage(raw)
@@ -133,13 +128,8 @@ func (m *IRC) Disconnect() {
 		close(m.end)
 	}
 
-	if m.put != nil {
-		close(m.put)
-	}
-
-	if m.get != nil {
-		close(m.get)
-	}
+	// Wait for loops
+	m.Wait()
 
 	// Close the connection
 	if m.conn != nil {
@@ -149,8 +139,15 @@ func (m *IRC) Disconnect() {
 	// Reset the connection
 	m.conn = nil
 
-	// Wait for loops
-	m.Wait()
+	// Close the put channel
+	if m.put != nil {
+		close(m.put)
+	}
+
+	// Close the get channel
+	if m.get != nil {
+		close(m.get)
+	}
 }
 
 // Connect will connect the client, create new channels if needed
@@ -183,23 +180,6 @@ func (m *IRC) Connect() error {
 	// Check for errors
 	if err != nil {
 		return err
-	}
-
-	// Create the input and output channels
-	if m.get == nil {
-		m.get = make(chan *msg.Message, 100)
-	}
-
-	if m.put == nil {
-		m.put = make(chan string, 100)
-	}
-
-	if m.end == nil {
-		m.end = make(chan struct{})
-	}
-
-	if m.err == nil {
-		m.err = make(chan error, 100)
 	}
 
 	// Start the loops
