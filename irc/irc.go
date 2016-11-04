@@ -7,6 +7,7 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"time"
 
 	"log"
 
@@ -58,13 +59,13 @@ func (m *IRC) loopPut() {
 			}
 
 			// Set the timeout
-			//m.conn.SetWriteDeadline(time.Now().Add(m.config.Timeout))
+			m.conn.SetWriteDeadline(time.Now().Add(m.config.Timeout))
 
 			// Send the message to the server
 			_, err := m.conn.Write([]byte(msg))
 
 			// Reset the timeout
-			//m.conn.SetWriteDeadline(time.Time{})
+			m.conn.SetWriteDeadline(time.Time{})
 
 			log.Println("Sent: ", msg, "Error: ", err)
 
@@ -92,7 +93,7 @@ func (m *IRC) loopGet() {
 			return
 		default:
 			// Set the read timeout
-			//m.conn.SetReadDeadline(time.Now().Add(m.config.Timeout))
+			m.conn.SetReadDeadline(time.Now().Add(m.config.Timeout))
 
 			// Fetch the message from the server
 			raw, err := reader.ReadString('\n')
@@ -118,7 +119,7 @@ func (m *IRC) loopGet() {
 			}
 
 			// Reset the timeout
-			//m.conn.SetReadDeadline(time.Time{})
+			m.conn.SetReadDeadline(time.Time{})
 
 			// Parse the message
 			msg, err := msg.ParseMessage(raw)

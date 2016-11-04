@@ -78,7 +78,7 @@ var _ = Describe("Irc", func() {
 			Port:               5555,
 			Secure:             false,
 			InsecureSkipVerify: false,
-			Timeout:            30,
+			Timeout:            time.Second * 30,
 			TimeoutLimit:       5,
 		}
 		emp Config = Config{}
