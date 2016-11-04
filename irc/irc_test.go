@@ -127,7 +127,6 @@ var _ = Describe("Irc", func() {
 
 		By("sending user")
 		writer <- "USER geoffrey 0 * :geoffrey"
-		Expect(<-reader).NotTo(BeNil())
 
 		By("checking sent data")
 		res := <-result
