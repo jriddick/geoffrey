@@ -7,6 +7,8 @@ import (
 
 	"bufio"
 
+	"time"
+
 	. "github.com/jriddick/geoffrey/irc"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -27,6 +29,7 @@ func IRCDaemonReg(conn net.Listener, result chan []byte) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	client.SetDeadline(time.Now().Add(time.Second * 60))
 
 	go func(c net.Conn) {
 		// Wait until we get some data
