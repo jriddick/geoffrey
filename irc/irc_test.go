@@ -48,7 +48,10 @@ var _ = Describe("Irc", func() {
 		reader := client.Reader()
 		Expect(reader).NotTo(BeNil())
 
-		Expect(<-reader).NotTo(BeNil())
+		msg := <-reader
+		Expect(msg).NotTo(BeNil())
+		Expect(msg.String()).NotTo(BeEmpty())
+
 		close(done)
 	}, 2)
 
