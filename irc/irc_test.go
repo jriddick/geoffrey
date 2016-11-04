@@ -65,7 +65,7 @@ func IRCDaemonRec(conn net.Listener) {
 var _ = Describe("Irc", func() {
 	var (
 		cfg Config = Config{
-			Hostname:           "localhost",
+			Hostname:           "127.0.0.1",
 			Port:               5555,
 			Secure:             false,
 			InsecureSkipVerify: false,
@@ -81,7 +81,7 @@ var _ = Describe("Irc", func() {
 
 	It("should be able to connect", func() {
 		By("starting the server")
-		ircd, err := net.Listen("tcp", "localhost:5555")
+		ircd, err := net.Listen("tcp", "127.0.0.1:5555")
 		Expect(err).NotTo(HaveOccurred())
 
 		By("starting the handler")
@@ -107,7 +107,7 @@ var _ = Describe("Irc", func() {
 
 	It("should be able to register to the server", func() {
 		By("creating the server")
-		ircd, err := net.Listen("tcp", "localhost:5556")
+		ircd, err := net.Listen("tcp", "127.0.0.1:5556")
 		Expect(err).NotTo(HaveOccurred())
 
 		By("starting the handler")
@@ -145,7 +145,7 @@ var _ = Describe("Irc", func() {
 
 	It("should be able to reconnect to the server", func() {
 		By("creating the server")
-		ircd, err := net.Listen("tcp", "localhost:5557")
+		ircd, err := net.Listen("tcp", "127.0.0.1:5557")
 		Expect(err).NotTo(HaveOccurred())
 
 		By("starting the handler")
@@ -170,7 +170,7 @@ var _ = Describe("Irc", func() {
 
 	It("should not be able to send empty messages", func() {
 		By("creating the server")
-		ircd, err := net.Listen("tcp", "localhost:5558")
+		ircd, err := net.Listen("tcp", "127.0.0.1:5558")
 		Expect(err).NotTo(HaveOccurred())
 
 		By("starting the handler")
