@@ -127,14 +127,7 @@ var _ = Describe("Irc", func() {
 
 		By("sending user")
 		writer <- "USER geoffrey 0 * :geoffrey"
-
-		for {
-			line := <-reader
-
-			if line != nil && line.Command == RPL_WELCOME {
-				break
-			}
-		}
+		Expect(<-reader).NotTo(BeNil())
 
 		By("checking sent data")
 		res := <-result
