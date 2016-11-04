@@ -53,7 +53,7 @@ var _ = Describe("Irc", func() {
 		Expect(msg.String()).NotTo(BeEmpty())
 
 		close(done)
-	}, 2)
+	}, 5)
 
 	It("should be able to register to the server", func(done Done) {
 		By("connecting to the server")
@@ -79,7 +79,7 @@ var _ = Describe("Irc", func() {
 		}
 
 		close(done)
-	}, 2)
+	}, 5)
 
 	It("should be able to reconnect to the server", func(done Done) {
 		By("connecting to the server")
@@ -95,5 +95,17 @@ var _ = Describe("Irc", func() {
 		Expect(<-client.Reader()).NotTo(BeNil())
 
 		close(done)
-	}, 2)
+	}, 5)
+
+	It("should not be able to send empty messages", func(done Done) {
+		By("connecting to the server")
+		Expect(client.Connect()).NotTo(HaveOccurred())
+
+		By("sending an empty message")
+		client.Writer() <- ""
+
+		Expect(<-client.Errors()).NotTo(BeNil())
+
+		close(done)
+	}, 5)
 })
