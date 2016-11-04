@@ -9,8 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"log"
-
 	"github.com/jriddick/geoffrey/msg"
 )
 
@@ -45,8 +43,6 @@ func (m *IRC) loopPut() {
 		case <-m.end:
 			return
 		case msg := <-m.put:
-			log.Println("Sending: ", msg)
-
 			// We do not send any empty values
 			if msg == "" {
 				m.err <- fmt.Errorf("tried to send empty message")
@@ -66,8 +62,6 @@ func (m *IRC) loopPut() {
 
 			// Reset the timeout
 			m.conn.SetWriteDeadline(time.Time{})
-
-			log.Println("Sent: ", msg, "Error: ", err)
 
 			// Make sure we did not get any errors
 			if err != nil {
