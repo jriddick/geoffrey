@@ -105,7 +105,7 @@ var _ = Describe("Irc", func() {
 		Expect(NewIRC(emp).Connect()).To(HaveOccurred())
 	})
 
-	It("should be able to register to the server", func(done Done) {
+	It("should be able to register to the server", func() {
 		By("creating the server")
 		ircd, err := net.Listen("tcp", "localhost:5556")
 		Expect(err).NotTo(HaveOccurred())
@@ -141,10 +141,9 @@ var _ = Describe("Irc", func() {
 		Expect(string(res)).To(Equal("USER geoffrey 0 * :geoffrey"))
 
 		Expect(ircd.Close()).NotTo(HaveOccurred())
-		close(done)
-	}, 30)
+	})
 
-	It("should be able to reconnect to the server", func(done Done) {
+	It("should be able to reconnect to the server", func() {
 		By("creating the server")
 		ircd, err := net.Listen("tcp", "localhost:5557")
 		Expect(err).NotTo(HaveOccurred())
@@ -167,10 +166,9 @@ var _ = Describe("Irc", func() {
 		Expect(<-client.Reader()).NotTo(BeNil())
 
 		Expect(ircd.Close()).NotTo(HaveOccurred())
-		close(done)
-	}, 30)
+	})
 
-	It("should not be able to send empty messages", func(done Done) {
+	It("should not be able to send empty messages", func() {
 		By("creating the server")
 		ircd, err := net.Listen("tcp", "localhost:5558")
 		Expect(err).NotTo(HaveOccurred())
@@ -191,6 +189,5 @@ var _ = Describe("Irc", func() {
 		Expect(<-client.Errors()).NotTo(BeNil())
 
 		Expect(ircd.Close()).NotTo(HaveOccurred())
-		close(done)
-	}, 5)
+	})
 })
