@@ -139,7 +139,7 @@ var _ = Describe("Irc", func() {
 
 		By("checking sent data")
 		res := <-result
-		Expect(string(res)).To(Equal("USER geoffrey 0 * :geoffrey"))
+		Expect(string(res)).To(Equal("USER geoffrey 0 * :geoffrey\r\n"))
 
 		Expect(ircd.Close()).NotTo(HaveOccurred())
 	})
