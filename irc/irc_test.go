@@ -77,4 +77,20 @@ var _ = Describe("Irc", func() {
 
 		close(done)
 	}, 2)
+
+	It("should be able to reconnect to the server", func(done Done) {
+		By("connecting to the server")
+		Expect(client.Connect()).NotTo(HaveOccurred())
+
+		By("reading from the server")
+		Expect(<-client.Reader()).NotTo(BeNil())
+
+		By("reconnecting")
+		Expect(client.Reconnect()).NotTo(HaveOccurred())
+
+		By("reading from the server")
+		Expect(<-client.Reader()).NotTo(BeNil())
+
+		close(done)
+	}, 2)
 })
