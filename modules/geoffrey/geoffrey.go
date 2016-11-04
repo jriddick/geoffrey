@@ -14,6 +14,11 @@ func Load(L *lua.LState) int {
 	return 1
 }
 
+// Register will globally register this module
+func Register(L *lua.LState) {
+	L.RegisterModule("geoffrey", exports)
+}
+
 var exports = map[string]lua.LGFunction{
 	"add": add,
 }
@@ -31,6 +36,7 @@ func add(L *lua.LState) int {
 	user := table.RawGetString("User")
 	name := table.RawGetString("Name")
 
+	// Check the types of all parameters
 	if hostname.Type() != lua.LTString {
 		log.Fatalln("Hostname must be a string")
 	}
