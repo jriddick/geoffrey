@@ -2,6 +2,7 @@ package irc
 
 import (
 	"fmt"
+	"time"
 )
 
 // Config is the client configuration
@@ -10,6 +11,8 @@ type Config struct {
 	Port               int
 	Secure             bool
 	InsecureSkipVerify bool
+	Timeout            time.Duration
+	TimeoutLimit       int
 }
 
 // GetHostname retuns the full hostname with port
