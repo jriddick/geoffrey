@@ -2,9 +2,8 @@ package bot
 
 import (
 	"fmt"
-	"strings"
-
 	"log"
+	"strings"
 
 	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/msg"
@@ -19,6 +18,7 @@ type Bot struct {
 	client          *irc.IRC
 	writer          chan<- string
 	reader          <-chan *msg.Message
+	stop            chan struct{}
 	config          Config
 	messageHandlers []MessageHandler
 	channels        map[string]*Channel
@@ -48,6 +48,7 @@ func NewBot(config Config) *Bot {
 		}),
 		config:   config,
 		channels: make(map[string]*Channel),
+		stop:     make(chan struct{}),
 	}
 
 	return bot
@@ -69,73 +70,80 @@ func (b *Bot) Connect() error {
 
 // Handler will start processing messages
 func (b *Bot) Handler() {
-	for msg := range b.reader {
-		// Log all messages
-		log.Println(msg.String())
+	for {
+		select {
+		case <-b.stop:
+			// Disconnect the client
+			b.client.Disconnect()
+			break
+		case msg := <-b.reader:
+			// Log all messages
+			log.Println(msg.String())
 
-		// Send nick and user after connecting
-		if msg.Trailing == "*** Looking up your hostname..." {
-			b.writer <- fmt.Sprintf("NICK %s", b.config.Nick)
-			b.writer <- fmt.Sprintf("USER %s 0 * :%s", b.config.User, b.config.Name)
-			continue
-		}
-
-		// Answer PING with PONG
-		if msg.Command == "PING" {
-			b.writer <- fmt.Sprintf("PONG %s", msg.Trailing)
-			continue
-		}
-
-		// Join channels when ready
-		if msg.Command == irc.RPL_WELCOME {
-			for _, channel := range b.config.Channels {
-				b.Join(channel)
+			// Send nick and user after connecting
+			if msg.Trailing == "*** Looking up your hostname..." {
+				b.writer <- fmt.Sprintf("NICK %s", b.config.Nick)
+				b.writer <- fmt.Sprintf("USER %s 0 * :%s", b.config.User, b.config.Name)
+				continue
 			}
-			continue
-		}
 
-		// Handle JOINs
-		if msg.Command == "JOIN" {
-			// Add the channel if we just joined it
-			if msg.Prefix.Name == b.config.Nick {
-				// Add the channel
-				b.AddChannel(msg.Trailing)
-			} else {
-				// Add the user
-				b.channels[msg.Trailing].AddUser(msg.Prefix.Name)
+			// Answer PING with PONG
+			if msg.Command == "PING" {
+				b.writer <- fmt.Sprintf("PONG %s", msg.Trailing)
+				continue
 			}
-		}
 
-		// Check if this is a name reply
-		if msg.Command == irc.RPL_NAMREPLY {
-			for _, nick := range strings.Split(msg.Trailing, " ") {
-				if nick != b.config.Nick {
-					b.channels[msg.Params[2]].AddUser(nick)
+			// Join channels when ready
+			if msg.Command == irc.RPL_WELCOME {
+				for _, channel := range b.config.Channels {
+					b.Join(channel)
+				}
+				continue
+			}
+
+			// Handle JOINs
+			if msg.Command == "JOIN" {
+				// Add the channel if we just joined it
+				if msg.Prefix.Name == b.config.Nick {
+					// Add the channel
+					b.AddChannel(msg.Trailing)
+				} else {
+					// Add the user
+					b.channels[msg.Trailing].AddUser(msg.Prefix.Name)
 				}
 			}
-		}
 
-		// Handle PARTs
-		if msg.Command == "PART" {
-			// Remove the user
-			b.channels[msg.Params[0]].RemoveUser(msg.Prefix.Name)
-		}
-
-		// Let our handlers handle PRIVMSG
-		if msg.Command == "PRIVMSG" {
-			// Get the channel
-			channel := b.channels[msg.Params[0]]
-
-			// Get the sender
-			sender := channel.Users[msg.Prefix.Name]
-
-			// Run the handlers
-			go func() {
-				for _, handler := range b.messageHandlers {
-					go handler(b, channel, sender, msg.Trailing)
+			// Check if this is a name reply
+			if msg.Command == irc.RPL_NAMREPLY {
+				for _, nick := range strings.Split(msg.Trailing, " ") {
+					if nick != b.config.Nick {
+						b.channels[msg.Params[2]].AddUser(nick)
+					}
 				}
-			}()
-			continue
+			}
+
+			// Handle PARTs
+			if msg.Command == "PART" {
+				// Remove the user
+				b.channels[msg.Params[0]].RemoveUser(msg.Prefix.Name)
+			}
+
+			// Let our handlers handle PRIVMSG
+			if msg.Command == "PRIVMSG" {
+				// Get the channel
+				channel := b.channels[msg.Params[0]]
+
+				// Get the sender
+				sender := channel.Users[msg.Prefix.Name]
+
+				// Run the handlers
+				go func() {
+					for _, handler := range b.messageHandlers {
+						go handler(b, channel, sender, msg.Trailing)
+					}
+				}()
+				continue
+			}
 		}
 	}
 }
@@ -177,5 +185,5 @@ func (b *Bot) OnMessage(handler MessageHandler) {
 
 // Close will close the bot
 func (b *Bot) Close() {
-	b.client.Disconnect()
+	close(b.stop)
 }
