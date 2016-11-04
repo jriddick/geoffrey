@@ -1,18 +1,9 @@
 package geoffrey
 
-import "github.com/yuin/gopher-lua"
-import "log"
-
-// Load will load the module to the Lua state
-func Load(L *lua.LState) int {
-	// Register the module
-	mod := L.SetFuncs(L.NewTable(), exports)
-
-	// Push the module
-	L.Push(mod)
-
-	return 1
-}
+import (
+	log "github.com/Sirupsen/logrus"
+	"github.com/yuin/gopher-lua"
+)
 
 // Register will globally register this module
 func Register(L *lua.LState) {
@@ -38,31 +29,31 @@ func add(L *lua.LState) int {
 
 	// Check the types of all parameters
 	if hostname.Type() != lua.LTString {
-		log.Fatalln("Hostname must be a string")
+		log.Errorf("hostname must be 'string' but it was '%s'", hostname.Type().String())
 	}
 
 	if port.Type() != lua.LTNumber {
-		log.Fatalln("Port must be a number")
+		log.Errorf("port must be 'number' but it was '%s'", port.Type().String())
 	}
 
 	if secure.Type() != lua.LTBool {
-		log.Fatalln("Secure must be a boolean")
+		log.Errorf("secure must be 'boolean' but it was '%s'", secure.Type().String())
 	}
 
 	if verify.Type() != lua.LTBool {
-		log.Fatalln("InsecureSkipVerify must be a boolean")
+		log.Errorf("insecureSkipVerify must be 'boolean' but it was '%s'", verify.Type().String())
 	}
 
 	if nick.Type() != lua.LTString {
-		log.Fatalln("Nick must be a string")
+		log.Errorf("nick must be 'string' but it was '%s'", nick.Type().String())
 	}
 
 	if user.Type() != lua.LTString {
-		log.Fatalln("User must be a string")
+		log.Errorf("use must be 'string' but it was '%s'", user.Type().String())
 	}
 
 	if name.Type() != lua.LTString {
-		log.Fatalln("Name must be a string")
+		log.Errorf("name must be 'string' but it was '%s'", name.Type().String())
 	}
 
 	return 0
