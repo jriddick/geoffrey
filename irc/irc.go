@@ -67,7 +67,7 @@ func (m *IRC) loopPut() {
 			// Reset the timeout
 			m.conn.SetWriteDeadline(time.Time{})
 
-			log.Println("Sent: ", msg)
+			log.Println("Sent: ", msg, "Error: ", err)
 
 			// Make sure we did not get any errors
 			if err != nil {
