@@ -1,5 +1,5 @@
 # Geoffrey
-![travis-ci](https://travis-ci.org/jriddick/geoffrey.svg?branch=master)
+[![Build Status](https://travis-ci.org/jriddick/geoffrey.svg?branch=master)](https://travis-ci.org/jriddick/geoffrey)
 
 An IRC bot written in Go and scripted using Lua ([gopher-lua][lua]).
 
