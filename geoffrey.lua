@@ -6,5 +6,11 @@ geoffrey.add("geoffrey", {
     InsecureSkipVerify = false,
     Nick = "geoffrey",
     User = "geoffrey",
-    Name = "geoffrey"
+    Name = "geoffrey",
+    ReconnectLimit = 2,
+    Timeout = 30,
+    TImeoutLimit = 5,
+    Channels = {
+        "#geoffrey"
+    }
 })
