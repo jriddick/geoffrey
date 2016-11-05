@@ -1,6 +1,12 @@
 package bot
 
-import "github.com/yuin/gopher-lua"
+import (
+	"reflect"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/jriddick/geoffrey/helper"
+	"github.com/yuin/gopher-lua"
+)
 
 // RegisterBot will register the Bot struct to Lua
 func RegisterBot(state *lua.LState) {
@@ -26,69 +32,104 @@ func PushBot(bot *Bot, state *lua.LState) {
 }
 
 func checkBot(state *lua.LState) *Bot {
-	data := state.CheckUserData(1)
-	if v, ok := data.Value.(*Bot); ok {
-		return v
+	// Get the logger
+	logger := log.WithField("file", state.Where(1))
+
+	// Try to get the userdata
+	data := helper.GetUserData(1, state)
+	if data != nil {
+		// Check if userdata is the right type
+		if bot, ok := data.Value.(*Bot); ok {
+			return bot
+		}
+
+		logger.Errorf("Expected userdata type of of type Bot, we got '%s'", reflect.TypeOf(data.Value).Name())
 	}
-	state.ArgError(1, "bot expected")
 	return nil
 }
 
 func botSend(state *lua.LState) int {
 	bot := checkBot(state)
-	rcv := state.CheckString(2)
-	msg := state.CheckString(3)
+	rcv := helper.GetString(2, state)
+	msg := helper.GetString(3, state)
 
-	bot.Send(rcv, msg)
+	if msg != nil && rcv != nil {
+		bot.Send(*rcv, *msg)
+	}
+
 	return 0
 }
 
 func botJoin(state *lua.LState) int {
 	bot := checkBot(state)
-	channel := state.CheckString(2)
+	channel := helper.GetString(2, state)
 
-	bot.Join(channel)
+	if channel != nil {
+		bot.Join(*channel)
+	}
+
 	return 0
 }
 
 func botPing(state *lua.LState) int {
 	bot := checkBot(state)
-	msg := state.CheckString(2)
+	msg := helper.GetString(2, state)
 
-	bot.Ping(msg)
+	if msg != nil {
+		bot.Ping(*msg)
+	}
+
 	return 0
 }
 
 func botPong(state *lua.LState) int {
 	bot := checkBot(state)
-	msg := state.CheckString(2)
+	msg := helper.GetString(2, state)
 
-	bot.Pong(msg)
+	if msg != nil {
+		bot.Pong(*msg)
+	}
+
 	return 0
 }
 
 func botNick(state *lua.LState) int {
 	bot := checkBot(state)
-	nick := state.CheckString(2)
+	nick := helper.GetString(2, state)
 
-	bot.Nick(nick)
+	if nick != nil {
+		bot.Nick(*nick)
+	}
+
 	return 0
 }
 
 func botUser(state *lua.LState) int {
 	bot := checkBot(state)
-	user := state.CheckString(2)
-	name := state.CheckString(3)
+	user := helper.GetString(2, state)
+	name := helper.GetString(3, state)
 
-	bot.User(user, name)
+	if user != nil && name != nil {
+		bot.User(*user, *name)
+	}
+
 	return 0
 }
 
 func botIndex(state *lua.LState) int {
 	bot := checkBot(state)
-	key := state.CheckString(2)
 
-	switch key {
+	if bot == nil {
+		return 0
+	}
+
+	key := helper.GetString(2, state)
+
+	if key == nil {
+		return 0
+	}
+
+	switch *key {
 	case "send":
 		state.Push(state.NewFunction(botSend))
 	case "join":
