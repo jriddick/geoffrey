@@ -1,21 +1,32 @@
 -- Add a bot
 geoffrey.add("geoffrey", {
-    Config = {
-        Hostname = "localhost",
-        Port = 6667,
-        Secure = false,
-        InsecureSkipVerify = false,
+    Registration = {
         Nick = "geoffrey",
         User = "geoffrey",
         Name = "geoffrey",
-        ReconnectLimit = 2,
-        Timeout = 30,
-        TImeoutLimit = 5,
-        Channels = {
-            "#geoffrey"
-        },
+    },
+    Authentication = {
+        Username = "geoffrey",
+        Password = "...",
+    },
+    Limits = {
+        Reconnect = 5,
+        Timeout = 5,
+    },
+    Connection = {
+        Host = "localhost",
+        Port = 6667,
+        Secure = false,
+        InsecureSkipVerify = false,
+        Timeout = 30
+    },
+    Channels = {
+        "#geoffrey"
     },
     Plugins = {
-        "echo"
-    }
+        "echo",
+        "registration",
+        "join",
+        "ping"
+    },
 })

@@ -19,9 +19,30 @@ type Geoffrey struct {
 	plugins *plugin.Plugin
 }
 
-type geoffreyConfig struct {
-	Config  bot.Config
-	Plugins []string
+// Config is the configuration struct for Geoffrey
+type Config struct {
+	Connection struct {
+		Host               string
+		Port               int
+		Secure             bool
+		InsecureSkipVerify bool
+		Timeout            int
+	}
+	Limits struct {
+		Reconnect int
+		Timeout   int
+	}
+	Authentication struct {
+		Username string
+		Password string
+	}
+	Registration struct {
+		Nick string
+		User string
+		Name string
+	}
+	Channels []string
+	Plugins  []string
 }
 
 // NewGeoffrey returns a new Geoffrey module
@@ -54,7 +75,7 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 	name := L.ToString(1)
 
 	// The bot configuration
-	var config geoffreyConfig
+	var config Config
 
 	// Map the configuration
 	if err := gluamapper.Map(table, &config); err != nil {
@@ -62,12 +83,24 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 	}
 
 	// Create the bot
-	bots[name] = bot.NewBot(config.Config, L.NewThread())
+	bots[name] = bot.NewBot(bot.Config{
+		Hostname:           config.Connection.Host,
+		Port:               config.Connection.Port,
+		Secure:             config.Connection.Secure,
+		InsecureSkipVerify: config.Connection.InsecureSkipVerify,
+		Timeout:            config.Connection.Timeout,
+		TimeoutLimit:       config.Limits.Timeout,
+		ReconnectLimit:     config.Limits.Reconnect,
+		Nick:               config.Registration.Nick,
+		User:               config.Registration.User,
+		Name:               config.Registration.Name,
+		Channels:           config.Channels,
+	}, L.NewThread())
 
 	// Get all loaded plugins
-	for _, name := range config.Plugins {
-		if plugin, ok := g.plugins.Plugins[name]; !ok {
-			log.Errorf("Tried to use non-existent plugin '%s'", name)
+	for _, pluginName := range config.Plugins {
+		if plugin, ok := g.plugins.Plugins[pluginName]; !ok {
+			log.Errorf("Tried to use non-existent plugin '%s'", pluginName)
 			continue
 		} else {
 			for event, handler := range plugin.Bind {
@@ -94,7 +127,9 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 	}
 
 	// Connect
-	bots[name].Connect()
+	if err := bots[name].Connect(); err != nil {
+		log.Fatalln(err)
+	}
 
 	// Run the handler
 	go bots[name].Handler()
