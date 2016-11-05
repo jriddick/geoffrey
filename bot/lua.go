@@ -1,8 +1,6 @@
 package bot
 
-import (
-	"github.com/yuin/gopher-lua"
-)
+import "github.com/yuin/gopher-lua"
 
 // RegisterBot will register the Bot struct to Lua
 func RegisterBot(state *lua.LState) {
@@ -11,9 +9,20 @@ func RegisterBot(state *lua.LState) {
 	state.SetGlobal("bot", meta)
 
 	// Bind our functions
-	state.SetField(meta, "__index", state.SetFuncs(state.NewTable(), map[string]lua.LGFunction{
-		"send": botSend,
-	}))
+	state.SetField(meta, "__index", state.NewFunction(botIndex))
+}
+
+// PushBot will push an existing *Bot onto the Lua stack
+func PushBot(bot *Bot, state *lua.LState) {
+	// Create the bot user data
+	data := state.NewUserData()
+	data.Value = bot
+
+	// Set the Metatable
+	state.SetMetatable(data, state.GetTypeMetatable("bot"))
+
+	// Push the bot
+	state.Push(data)
 }
 
 // checkBot will check wether the first argument is a *Bot
@@ -42,4 +51,19 @@ func botJoin(state *lua.LState) int {
 
 	bot.Join(channel)
 	return 0
+}
+
+func botIndex(state *lua.LState) int {
+	key := state.CheckString(2)
+
+	switch key {
+	case "send":
+		state.Push(state.NewFunction(botSend))
+	case "join":
+		state.Push(state.NewFunction(botJoin))
+	default:
+		state.Push(lua.LNil)
+	}
+
+	return 1
 }
