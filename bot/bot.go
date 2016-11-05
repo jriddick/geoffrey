@@ -18,14 +18,13 @@ type MessageHandler func(*Bot, string)
 
 // Bot is the structure for an IRC bot
 type Bot struct {
-	client          *irc.IRC
-	writer          chan<- string
-	reader          <-chan *msg.Message
-	stop            chan struct{}
-	config          Config
-	MessageHandlers []MessageHandler
-	LuaHandlers     map[string][]*lua.LFunction
-	state           *lua.LState
+	client      *irc.IRC
+	writer      chan<- string
+	reader      <-chan *msg.Message
+	stop        chan struct{}
+	config      Config
+	LuaHandlers map[string][]*lua.LFunction
+	state       *lua.LState
 }
 
 // NewBot creates a new bot
@@ -83,40 +82,9 @@ func (b *Bot) Handler() {
 			// Log all messages
 			log.Debugln(msg.String())
 
-			// Send nick and user after connecting
-			if msg.Trailing == "*** Looking up your hostname..." {
-				b.Nick(b.config.Nick)
-				b.User(b.config.User, b.config.Name)
-				continue
-			}
-
-			// Answer PING with PONG
-			if msg.Command == irc.Ping {
-				b.Pong(msg.Trailing)
-				continue
-			}
-
-			// Join channels when ready
-			if msg.Command == irc.Welcome {
-				for _, channel := range b.config.Channels {
-					b.Join(channel)
-				}
-				continue
-			}
-
-			// Let our handlers handle PRIVMSG
-			if msg.Command == irc.Message {
-				// Run the handlers
-				go func() {
-					for _, handler := range b.MessageHandlers {
-						go handler(b, msg.Trailing)
-					}
-				}()
-			}
-
 			// Go through all Lua handlers
 			go func(bot *Bot, state *lua.LState) {
-				for _, handler := range b.LuaHandlers[msg.Command] {
+				for _, handler := range bot.LuaHandlers[msg.Command] {
 					// Run the Lua handler
 					go func(state *lua.LState, handler *lua.LFunction, bot *Bot) {
 						// Push the handler function
@@ -190,11 +158,6 @@ func (b *Bot) User(user, name string) {
 
 	// Send the command
 	b.writer <- "USER " + user + " 0 * :" + name
-}
-
-// OnMessage registeres a new PRIVMSG handler
-func (b *Bot) OnMessage(handler MessageHandler) {
-	b.MessageHandlers = append(b.MessageHandlers, handler)
 }
 
 // AddLuaHandler registers a Lua handler for the OnMessage event
