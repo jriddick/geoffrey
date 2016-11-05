@@ -67,6 +67,23 @@ func botPong(state *lua.LState) int {
 	return 0
 }
 
+func botNick(state *lua.LState) int {
+	bot := checkBot(state)
+	nick := state.CheckString(2)
+
+	bot.Nick(nick)
+	return 0
+}
+
+func botUser(state *lua.LState) int {
+	bot := checkBot(state)
+	user := state.CheckString(2)
+	name := state.CheckString(3)
+
+	bot.User(user, name)
+	return 0
+}
+
 func botIndex(state *lua.LState) int {
 	bot := checkBot(state)
 	key := state.CheckString(2)
@@ -80,6 +97,10 @@ func botIndex(state *lua.LState) int {
 		state.Push(state.NewFunction(botPing))
 	case "pong":
 		state.Push(state.NewFunction(botPong))
+	case "nick":
+		state.Push(state.NewFunction(botNick))
+	case "user":
+		state.Push(state.NewFunction(botUser))
 	case "config":
 		PushConfig(&bot.config, state)
 	default:
