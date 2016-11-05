@@ -68,7 +68,7 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 		} else {
 			if plugin.Bind.OnMessage != nil {
 				// Bind the plugin handler
-				bots[L.ToString(1)].OnMessageLua(plugin.Bind.OnMessage)
+				bots[L.ToString(1)].AddLuaHandler("PRIVMSG", plugin.Bind.OnMessage)
 			}
 		}
 	}

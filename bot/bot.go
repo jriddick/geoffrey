@@ -18,14 +18,14 @@ type MessageHandler func(*Bot, string)
 
 // Bot is the structure for an IRC bot
 type Bot struct {
-	client             *irc.IRC
-	writer             chan<- string
-	reader             <-chan *msg.Message
-	stop               chan struct{}
-	config             Config
-	messageHandlers    []MessageHandler
-	messageHandlersLua []*lua.LFunction
-	state              *lua.LState
+	client          *irc.IRC
+	writer          chan<- string
+	reader          <-chan *msg.Message
+	stop            chan struct{}
+	config          Config
+	MessageHandlers []MessageHandler
+	LuaHandlers     map[string][]*lua.LFunction
+	state           *lua.LState
 }
 
 // Config is the configuration structure for Bot
@@ -55,9 +55,10 @@ func NewBot(config Config, state *lua.LState) *Bot {
 			Timeout:            time.Second * time.Duration(config.Timeout),
 			TimeoutLimit:       config.TimeoutLimit,
 		}),
-		config: config,
-		stop:   make(chan struct{}),
-		state:  state,
+		config:      config,
+		stop:        make(chan struct{}),
+		LuaHandlers: make(map[string][]*lua.LFunction),
+		state:       state,
 	}
 
 	// Register the bot struct
@@ -103,13 +104,13 @@ func (b *Bot) Handler() {
 			}
 
 			// Answer PING with PONG
-			if msg.Command == "PING" {
+			if msg.Command == irc.Ping {
 				b.writer <- fmt.Sprintf("PONG :%s", msg.Trailing)
 				continue
 			}
 
 			// Join channels when ready
-			if msg.Command == irc.RPL_WELCOME {
+			if msg.Command == irc.Welcome {
 				for _, channel := range b.config.Channels {
 					b.Join(channel)
 				}
@@ -117,17 +118,20 @@ func (b *Bot) Handler() {
 			}
 
 			// Let our handlers handle PRIVMSG
-			if msg.Command == "PRIVMSG" {
+			if msg.Command == irc.Message {
 				// Run the handlers
 				go func() {
-					for _, handler := range b.messageHandlers {
+					for _, handler := range b.MessageHandlers {
 						go handler(b, msg.Trailing)
 					}
 				}()
+			}
 
-				// Run the lua handlers
-				go func(state *lua.LState, bot *Bot) {
-					for _, handler := range b.messageHandlersLua {
+			// Go through all Lua handlers
+			go func() {
+				for _, handler := range b.LuaHandlers[msg.Command] {
+					// Run the Lua handler
+					go func(state *lua.LState, handler *lua.LFunction, bot *Bot) {
 						// Push the handler function
 						state.Push(handler)
 
@@ -147,11 +151,9 @@ func (b *Bot) Handler() {
 
 						// Close the thread
 						state.Close()
-					}
-				}(b.state.NewThread(), b)
-
-				continue
-			}
+					}(b.state.NewThread(), handler, b)
+				}
+			}()
 		}
 	}
 }
@@ -174,11 +176,12 @@ func (b *Bot) Join(channel string) {
 
 // OnMessage registeres a new PRIVMSG handler
 func (b *Bot) OnMessage(handler MessageHandler) {
-	b.messageHandlers = append(b.messageHandlers, handler)
+	b.MessageHandlers = append(b.MessageHandlers, handler)
 }
 
-func (b *Bot) OnMessageLua(handler *lua.LFunction) {
-	b.messageHandlersLua = append(b.messageHandlersLua, handler)
+// AddLuaHandler registers a Lua handler for the OnMessage event
+func (b *Bot) AddLuaHandler(command string, handler *lua.LFunction) {
+	b.LuaHandlers[command] = append(b.LuaHandlers[command], handler)
 }
 
 // Close will close the bot
