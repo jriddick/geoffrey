@@ -89,6 +89,7 @@ const (
 	Ping            = "PING"
 	Quit            = "QUIT"
 	Custom          = "999"
+	Notice          = "NOTICE"
 
 	ErrNosuchnick        = "401"
 	ErrNosuchserver      = "402"
