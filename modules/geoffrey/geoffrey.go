@@ -67,12 +67,29 @@ func (g *Geoffrey) Shutdown() {
 }
 
 // Add will create and start a new bot
-func (g *Geoffrey) Add(L *lua.LState) int {
+func (g *Geoffrey) Add(state *lua.LState) int {
+	// Build the logger
+	logger := log.WithField("file", state.Where(1))
+
+	// Check so we got the required number of parameters
+	if state.GetTop() != 2 {
+		logger.Errorf("Add takes two parameters, we got %d", state.GetTop())
+		return 0
+	}
+
 	// Get the table
-	table := L.ToTable(-1)
+	if state.Get(2).Type() != lua.LTTable {
+		logger.Errorf("Add takes a table as a second parameter, we got '%s'", state.Get(2).Type().String())
+		return 0
+	}
+	table := state.Get(2).(*lua.LTable)
 
 	// Get the name
-	name := L.ToString(1)
+	if state.Get(1).Type() != lua.LTString {
+		logger.Errorf("Add takes a string as the first parameter, we got '%s'", state.Get(1).Type().String())
+		return 0
+	}
+	name := lua.LVAsString(state.Get(1))
 
 	// The bot configuration
 	var config Config
@@ -95,12 +112,12 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 		User:               config.Registration.User,
 		Name:               config.Registration.Name,
 		Channels:           config.Channels,
-	}, L.NewThread())
+	}, state.NewThread())
 
 	// Get all loaded plugins
 	for _, pluginName := range config.Plugins {
 		if plugin, ok := g.plugins.Plugins[pluginName]; !ok {
-			log.Errorf("Tried to use non-existent plugin '%s'", pluginName)
+			logger.Errorf("Tried to use non-existent plugin '%s'", pluginName)
 			continue
 		} else {
 			for event, handler := range plugin.Bind {
@@ -128,7 +145,7 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 
 	// Connect
 	if err := bots[name].Connect(); err != nil {
-		log.Fatalln(err)
+		logger.WithError(err).Errorln("We could not connect to the server")
 	}
 
 	// Run the handler
