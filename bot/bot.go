@@ -49,6 +49,7 @@ func NewBot(config Config, state *lua.LState) *Bot {
 	// Register the bot struct
 	RegisterBot(state)
 	RegisterConfig(state)
+	RegisterMessage(state)
 
 	return bot
 }
@@ -130,7 +131,7 @@ func (b *Bot) Handler() {
 						state.Push(value)
 
 						// Push the message
-						state.Push(lua.LString(msg.Trailing))
+						PushMessage(msg, state)
 
 						// Call the function
 						state.Call(2, 0)
