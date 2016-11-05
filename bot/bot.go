@@ -9,21 +9,24 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/msg"
+	"github.com/yuin/gopher-lua"
 )
 
 // MessageHandler is the function type for
 // message handlers
-type MessageHandler func(*Bot, *Channel, User, string)
+type MessageHandler func(*Bot, string)
 
 // Bot is the structure for an IRC bot
 type Bot struct {
-	client          *irc.IRC
-	writer          chan<- string
-	reader          <-chan *msg.Message
-	stop            chan struct{}
-	config          Config
-	messageHandlers []MessageHandler
-	channels        map[string]*Channel
+	client             *irc.IRC
+	writer             chan<- string
+	reader             <-chan *msg.Message
+	stop               chan struct{}
+	config             Config
+	messageHandlers    []MessageHandler
+	messageHandlersLua []*lua.LFunction
+	channels           map[string]*Channel
+	state              *lua.LState
 }
 
 // Config is the configuration structure for Bot
@@ -42,7 +45,7 @@ type Config struct {
 }
 
 // NewBot creates a new bot
-func NewBot(config Config) *Bot {
+func NewBot(config Config, state *lua.LState) *Bot {
 	// Create the bot
 	bot := &Bot{
 		client: irc.NewIRC(irc.Config{
@@ -56,7 +59,11 @@ func NewBot(config Config) *Bot {
 		config:   config,
 		channels: make(map[string]*Channel),
 		stop:     make(chan struct{}),
+		state:    state,
 	}
+
+	// Register the bot struct
+	RegisterBot(state)
 
 	return bot
 }
@@ -111,47 +118,40 @@ func (b *Bot) Handler() {
 				continue
 			}
 
-			// Handle JOINs
-			if msg.Command == "JOIN" {
-				// Add the channel if we just joined it
-				if msg.Prefix.Name == b.config.Nick {
-					// Add the channel
-					b.AddChannel(msg.Trailing)
-				} else {
-					// Add the user
-					b.channels[msg.Trailing].AddUser(msg.Prefix.Name)
-				}
-			}
-
-			// Check if this is a name reply
-			if msg.Command == irc.RPL_NAMREPLY {
-				for _, nick := range strings.Split(msg.Trailing, " ") {
-					if nick != b.config.Nick {
-						b.channels[msg.Params[2]].AddUser(nick)
-					}
-				}
-			}
-
-			// Handle PARTs
-			if msg.Command == "PART" {
-				// Remove the user
-				b.channels[msg.Params[0]].RemoveUser(msg.Prefix.Name)
-			}
-
 			// Let our handlers handle PRIVMSG
 			if msg.Command == "PRIVMSG" {
-				// Get the channel
-				channel := b.channels[msg.Params[0]]
-
-				// Get the sender
-				sender := channel.Users[msg.Prefix.Name]
-
 				// Run the handlers
 				go func() {
 					for _, handler := range b.messageHandlers {
-						go handler(b, channel, sender, msg.Trailing)
+						go handler(b, msg.Trailing)
 					}
 				}()
+
+				// Run the lua handlers
+				go func(state *lua.LState, bot *Bot) {
+					for _, handler := range b.messageHandlersLua {
+						// Push the handler function
+						state.Push(handler)
+
+						// Create the metatable for our bot
+						value := state.NewUserData()
+						value.Value = bot
+						state.SetMetatable(value, state.GetTypeMetatable("bot"))
+
+						// Push the bot
+						state.Push(value)
+
+						// Push the message
+						state.Push(lua.LString(msg.Trailing))
+
+						// Call the function
+						state.Call(2, 0)
+
+						// Close the thread
+						state.Close()
+					}
+				}(b.state.NewThread(), b)
+
 				continue
 			}
 		}
@@ -191,6 +191,10 @@ func (b *Bot) AddChannel(channel string) {
 // OnMessage registeres a new PRIVMSG handler
 func (b *Bot) OnMessage(handler MessageHandler) {
 	b.messageHandlers = append(b.messageHandlers, handler)
+}
+
+func (b *Bot) OnMessageLua(handler *lua.LFunction) {
+	b.messageHandlersLua = append(b.messageHandlersLua, handler)
 }
 
 // Close will close the bot
