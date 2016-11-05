@@ -48,22 +48,33 @@ func (p *Plugin) loader(state *lua.LState) int {
 
 // Add will add a new plugin to the system
 func (p *Plugin) Add(state *lua.LState) int {
+	// Build the logger
+	logger := log.WithField("file", state.Where(1))
+
+	// Check so we get the required number of parameters
+	if state.GetTop() != 1 {
+		logger.Errorf("Plugin:Add takes one parameter, we got '%d'", state.GetTop())
+		return 0
+	}
+
 	// Get the table
-	table := state.ToTable(-1)
+	if state.Get(1).Type() != lua.LTTable {
+		logger.Errorf("Geoffrey:Add takes talbe as a parameter, we got '%s'", state.Get(1).Type().String())
+		return 0
+	}
+	table := state.Get(1).(*lua.LTable)
 
 	// The registered plugin
 	var plugin luaPlugin
 
 	// Map the table
 	if err := gluamapper.Map(table, &plugin); err != nil {
-		log.Errorf("Could not parse plugin: %s", err)
-
+		logger.WithError(err).Errorln("Could not parse the plugin")
 		return 0
 	}
 
 	if _, ok := p.Plugins[plugin.Name]; ok {
-		log.Errorf("Plugin with name '%s' already exist", plugin.Name)
-
+		logger.Errorf("Plugin with name '%s' already exist", plugin.Name)
 		return 0
 	}
 
@@ -73,7 +84,7 @@ func (p *Plugin) Add(state *lua.LState) int {
 		p.help[plugin.Name] = plugin.Help
 	}
 
-	log.Infof("Registered plugin '%s'", plugin.Name)
+	logger.Infof("Registered plugin '%s'", plugin.Name)
 
 	return 0
 }
