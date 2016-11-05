@@ -3,6 +3,7 @@ package geoffrey
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/bot"
+	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/modules/plugin"
 	"github.com/yuin/gluamapper"
 	"github.com/yuin/gopher-lua"
@@ -66,9 +67,23 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 			log.Errorf("Tried to use non-existent plugin '%s'", name)
 			continue
 		} else {
-			if plugin.Bind.OnMessage != nil {
-				// Bind the plugin handler
-				bots[L.ToString(1)].AddLuaHandler("PRIVMSG", plugin.Bind.OnMessage)
+			for event, handler := range plugin.Bind {
+				switch event {
+				case "OnMessage":
+					event = irc.Message
+				case "OnPing":
+					event = irc.Ping
+				case "OnWelcome":
+					event = irc.Welcome
+				case "OnJoin":
+					event = irc.Join
+				case "OnPart":
+					event = irc.Part
+				case "OnNameList":
+					event = irc.Namreply
+				}
+
+				bots[L.ToString(1)].AddLuaHandler(event, handler)
 			}
 		}
 	}

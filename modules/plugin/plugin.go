@@ -9,18 +9,15 @@ import (
 // Plugin module handles the registration
 // and management of plugins.
 type Plugin struct {
-	Plugins   map[string]luaPlugin
-	help      map[string]string
-	onMessage []*lua.LFunction
+	Plugins map[string]luaPlugin
+	help    map[string]string
 }
 
 type luaPlugin struct {
 	Name        string
 	Description string
 	Help        string
-	Bind        struct {
-		OnMessage *lua.LFunction
-	}
+	Bind        map[string]*lua.LFunction
 }
 
 // NewPluginModule returns a new plugin module
