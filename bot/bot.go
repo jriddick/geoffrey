@@ -25,7 +25,6 @@ type Bot struct {
 	config             Config
 	messageHandlers    []MessageHandler
 	messageHandlersLua []*lua.LFunction
-	channels           map[string]*Channel
 	state              *lua.LState
 }
 
@@ -56,10 +55,9 @@ func NewBot(config Config, state *lua.LState) *Bot {
 			Timeout:            time.Second * time.Duration(config.Timeout),
 			TimeoutLimit:       config.TimeoutLimit,
 		}),
-		config:   config,
-		channels: make(map[string]*Channel),
-		stop:     make(chan struct{}),
-		state:    state,
+		config: config,
+		stop:   make(chan struct{}),
+		state:  state,
 	}
 
 	// Register the bot struct
@@ -172,20 +170,6 @@ func (b *Bot) Join(channel string) {
 
 	// Send the join command
 	b.writer <- fmt.Sprintf("JOIN %s", channel)
-}
-
-// AddChannel will add channel to list of joined channels
-func (b *Bot) AddChannel(channel string) {
-	// Make sure we do not replace any existing channels
-	if _, ok := b.channels[channel]; ok {
-		return
-	}
-
-	// Add the channel to the list
-	b.channels[channel] = &Channel{
-		Name: channel,
-		bot:  b,
-	}
 }
 
 // OnMessage registeres a new PRIVMSG handler
