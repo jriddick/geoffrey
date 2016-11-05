@@ -35,3 +35,11 @@ func botSend(state *lua.LState) int {
 	bot.Send(rcv, msg)
 	return 0
 }
+
+func botJoin(state *lua.LState) int {
+	bot := checkBot(state)
+	channel := state.CheckString(2)
+
+	bot.Join(channel)
+	return 0
+}
