@@ -50,6 +50,9 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 	// Get the table
 	table := L.ToTable(-1)
 
+	// Get the name
+	name := L.ToString(1)
+
 	// The bot configuration
 	var config geoffreyConfig
 
@@ -59,7 +62,7 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 	}
 
 	// Create the bot
-	bots[L.ToString(1)] = bot.NewBot(config.Config, L.NewThread())
+	bots[name] = bot.NewBot(config.Config, L.NewThread())
 
 	// Get all loaded plugins
 	for _, name := range config.Plugins {
@@ -85,16 +88,16 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 					event = irc.Notice
 				}
 
-				bots[L.ToString(1)].AddLuaHandler(event, handler)
+				bots[name].AddLuaHandler(event, handler)
 			}
 		}
 	}
 
 	// Connect
-	bots[L.ToString(1)].Connect()
+	bots[name].Connect()
 
 	// Run the handler
-	go bots[L.ToString(1)].Handler()
+	go bots[name].Handler()
 
 	return 0
 }
