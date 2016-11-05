@@ -85,14 +85,14 @@ func (b *Bot) Handler() {
 
 			// Send nick and user after connecting
 			if msg.Trailing == "*** Looking up your hostname..." {
-				b.writer <- fmt.Sprintf("NICK %s", b.config.Nick)
-				b.writer <- fmt.Sprintf("USER %s 0 * :%s", b.config.User, b.config.Name)
+				b.Nick(b.config.Nick)
+				b.User(b.config.User, b.config.Name)
 				continue
 			}
 
 			// Answer PING with PONG
 			if msg.Command == irc.Ping {
-				b.writer <- fmt.Sprintf("PONG :%s", msg.Trailing)
+				b.Pong(msg.Trailing)
 				continue
 			}
 
@@ -159,6 +159,37 @@ func (b *Bot) Join(channel string) {
 
 	// Send the join command
 	b.writer <- fmt.Sprintf("JOIN %s", channel)
+}
+
+// Ping will send ping to the server
+func (b *Bot) Ping(message string) {
+	b.writer <- "PING :" + message
+}
+
+// Pong will send pong to the server
+func (b *Bot) Pong(message string) {
+	b.writer <- "PONG :" + message
+}
+
+// Nick will send the nick command to the server and
+// update the stored nick.
+func (b *Bot) Nick(nick string) {
+	// Set the nick
+	b.config.Nick = nick
+
+	// Send the nick
+	b.writer <- "NICK " + nick
+}
+
+// User will send the user command to the server and
+// update the stored name and user
+func (b *Bot) User(user, name string) {
+	// Set the stored user and name
+	b.config.User = user
+	b.config.Name = name
+
+	// Send the command
+	b.writer <- "USER " + user + " 0 * :" + name
 }
 
 // OnMessage registeres a new PRIVMSG handler
