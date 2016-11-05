@@ -59,7 +59,7 @@ func (p *Plugin) Add(state *lua.LState) int {
 
 	// Get the table
 	if state.Get(1).Type() != lua.LTTable {
-		logger.Errorf("Geoffrey:Add takes talbe as a parameter, we got '%s'", state.Get(1).Type().String())
+		logger.Errorf("Geoffrey:Add takes table as a parameter, we got '%s'", state.Get(1).Type().String())
 		return 0
 	}
 	table := state.Get(1).(*lua.LTable)
