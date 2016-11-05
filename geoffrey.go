@@ -9,6 +9,8 @@ import (
 
 	"io/ioutil"
 
+	"sync"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/modules/geoffrey"
 	"github.com/jriddick/geoffrey/modules/plugin"
@@ -19,6 +21,7 @@ import (
 var (
 	sigs = make(chan os.Signal, 1)
 	bots *geoffrey.Geoffrey
+	wg   sync.WaitGroup
 )
 
 func init() {
@@ -39,7 +42,7 @@ func init() {
 		bots.Shutdown()
 
 		// Exit the program
-		os.Exit(1)
+		wg.Done()
 	}()
 }
 
@@ -102,7 +105,6 @@ func main() {
 
 	log.Infoln("Geoffrey is now running...")
 
-	for {
-
-	}
+	wg.Add(1)
+	wg.Wait()
 }
