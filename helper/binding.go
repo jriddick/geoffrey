@@ -32,3 +32,14 @@ func GetString(n int, state *lua.LState) *string {
 	res := lua.LVAsString(val)
 	return &res
 }
+
+// HasArguments will check if there are n amount of arguments
+// on the Lua stack. If there is more ore less arguments we return false.
+func HasArguments(n int, state *lua.LState) bool {
+	if state.GetTop() != n {
+		log.WithField("file", state.Where(1)).Errorf("Expected %d arguments but we got '%d'", n, state.GetTop())
+		return false
+	}
+
+	return true
+}
