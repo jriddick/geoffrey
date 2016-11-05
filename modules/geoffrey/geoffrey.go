@@ -73,20 +73,20 @@ func (g *Geoffrey) Add(state *lua.LState) int {
 
 	// Check so we got the required number of parameters
 	if state.GetTop() != 2 {
-		logger.Errorf("Add takes two parameters, we got %d", state.GetTop())
+		logger.Errorf("Geoffrey:Add takes two parameters, we got %d", state.GetTop())
 		return 0
 	}
 
 	// Get the table
 	if state.Get(2).Type() != lua.LTTable {
-		logger.Errorf("Add takes a table as a second parameter, we got '%s'", state.Get(2).Type().String())
+		logger.Errorf("Geoffrey:Add takes a table as a second parameter, we got '%s'", state.Get(2).Type().String())
 		return 0
 	}
 	table := state.Get(2).(*lua.LTable)
 
 	// Get the name
 	if state.Get(1).Type() != lua.LTString {
-		logger.Errorf("Add takes a string as the first parameter, we got '%s'", state.Get(1).Type().String())
+		logger.Errorf("Geoffrey:Add takes a string as the first parameter, we got '%s'", state.Get(1).Type().String())
 		return 0
 	}
 	name := lua.LVAsString(state.Get(1))
