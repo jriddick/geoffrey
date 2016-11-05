@@ -63,7 +63,7 @@ func checkMessage(state *lua.LState) *msg.Message {
 			return msg
 		}
 
-		logger.Errorf("Expected userdata type of msg.Message but we got '%s'", reflect.TypeOf(data.Value).Name())
+		logger.Errorf("Expected userdata type msg.Message but we got '%s'", reflect.TypeOf(data.Value).Name())
 	}
 
 	return nil
@@ -81,7 +81,7 @@ func checkPrefix(state *lua.LState) *msg.Prefix {
 			return prefix
 		}
 
-		logger.Errorf("Expected userdata type of msg.Prefix but we got '%s'", reflect.TypeOf(data.Value).Name())
+		logger.Errorf("Expected userdata type msg.Prefix but we got '%s'", reflect.TypeOf(data.Value).Name())
 	}
 
 	return nil

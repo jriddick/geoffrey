@@ -43,12 +43,16 @@ func checkBot(state *lua.LState) *Bot {
 			return bot
 		}
 
-		logger.Errorf("Expected userdata type of of type Bot, we got '%s'", reflect.TypeOf(data.Value).Name())
+		logger.Errorf("Expected userdata type Bot, we got '%s'", reflect.TypeOf(data.Value).Name())
 	}
 	return nil
 }
 
 func botSend(state *lua.LState) int {
+	if !helper.HasArguments(3, state) {
+		return 0
+	}
+
 	bot := checkBot(state)
 	rcv := helper.GetString(2, state)
 	msg := helper.GetString(3, state)
@@ -61,6 +65,10 @@ func botSend(state *lua.LState) int {
 }
 
 func botJoin(state *lua.LState) int {
+	if !helper.HasArguments(2, state) {
+		return 0
+	}
+
 	bot := checkBot(state)
 	channel := helper.GetString(2, state)
 
@@ -72,6 +80,10 @@ func botJoin(state *lua.LState) int {
 }
 
 func botPing(state *lua.LState) int {
+	if !helper.HasArguments(2, state) {
+		return 0
+	}
+
 	bot := checkBot(state)
 	msg := helper.GetString(2, state)
 
@@ -83,6 +95,10 @@ func botPing(state *lua.LState) int {
 }
 
 func botPong(state *lua.LState) int {
+	if !helper.HasArguments(2, state) {
+		return 0
+	}
+
 	bot := checkBot(state)
 	msg := helper.GetString(2, state)
 
@@ -94,6 +110,10 @@ func botPong(state *lua.LState) int {
 }
 
 func botNick(state *lua.LState) int {
+	if !helper.HasArguments(2, state) {
+		return 0
+	}
+
 	bot := checkBot(state)
 	nick := helper.GetString(2, state)
 
@@ -105,6 +125,10 @@ func botNick(state *lua.LState) int {
 }
 
 func botUser(state *lua.LState) int {
+	if !helper.HasArguments(3, state) {
+		return 0
+	}
+
 	bot := checkBot(state)
 	user := helper.GetString(2, state)
 	name := helper.GetString(3, state)
