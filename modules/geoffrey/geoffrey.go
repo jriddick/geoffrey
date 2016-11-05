@@ -3,6 +3,7 @@ package geoffrey
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/bot"
+	"github.com/jriddick/geoffrey/modules/plugin"
 	"github.com/yuin/gluamapper"
 	"github.com/yuin/gopher-lua"
 )
@@ -14,11 +15,19 @@ var (
 // Geoffrey module handles the creation, start, stop and
 // cleanup of bots.
 type Geoffrey struct {
+	plugins *plugin.Plugin
+}
+
+type geoffreyConfig struct {
+	Config  bot.Config
+	Plugins []string
 }
 
 // NewGeoffrey returns a new Geoffrey module
-func NewGeoffrey() *Geoffrey {
-	return &Geoffrey{}
+func NewGeoffrey(plugins *plugin.Plugin) *Geoffrey {
+	return &Geoffrey{
+		plugins: plugins,
+	}
 }
 
 // Register will register the module to the lua state
@@ -41,7 +50,7 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 	table := L.ToTable(-1)
 
 	// The bot configuration
-	var config bot.Config
+	var config geoffreyConfig
 
 	// Map the configuration
 	if err := gluamapper.Map(table, &config); err != nil {
@@ -49,18 +58,26 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 	}
 
 	// Create the bot
-	bots[L.ToString(1)] = bot.NewBot(config)
+	bots[L.ToString(1)] = bot.NewBot(config.Config, L.NewThread())
+
+	// Get all loaded plugins
+	for _, name := range config.Plugins {
+		if plugin, ok := g.plugins.Plugins[name]; !ok {
+			log.Errorf("Tried to use non-existent plugin '%s'", name)
+			continue
+		} else {
+			if plugin.Bind.OnMessage != nil {
+				// Bind the plugin handler
+				bots[L.ToString(1)].OnMessageLua(plugin.Bind.OnMessage)
+			}
+		}
+	}
 
 	// Connect
 	bots[L.ToString(1)].Connect()
 
-	// Add logger handler
-	bots[L.ToString(1)].OnMessage(func(bot *bot.Bot, channel *bot.Channel, user bot.User, msg string) {
-		log.Debugln(msg)
-	})
-
 	// Run the handler
-	bots[L.ToString(1)].Handler()
+	go bots[L.ToString(1)].Handler()
 
 	return 0
 }
