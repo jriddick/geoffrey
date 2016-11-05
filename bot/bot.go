@@ -63,6 +63,7 @@ func NewBot(config Config, state *lua.LState) *Bot {
 
 	// Register the bot struct
 	RegisterBot(state)
+	RegisterConfig(state)
 
 	return bot
 }
