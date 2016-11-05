@@ -1,6 +1,12 @@
 package bot
 
-import lua "github.com/yuin/gopher-lua"
+import (
+	"reflect"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/jriddick/geoffrey/helper"
+	"github.com/yuin/gopher-lua"
+)
 
 // RegisterConfig will register the Config struct to Lua
 func RegisterConfig(state *lua.LState) {
@@ -26,19 +32,31 @@ func PushConfig(config *Config, state *lua.LState) {
 }
 
 func checkConfig(state *lua.LState) *Config {
-	data := state.CheckUserData(1)
-	if v, ok := data.Value.(*Config); ok {
-		return v
+	// Get the logger
+	logger := log.WithField("file", state.Where(1))
+
+	// Try to get the userdata
+	data := helper.GetUserData(1, state)
+	if data != nil {
+		if v, ok := data.Value.(*Config); ok {
+			return v
+		}
+
+		logger.Errorf("Expected userdata type Config but we got '%s'", reflect.TypeOf(data.Value).Name())
 	}
-	state.ArgError(1, "config expected")
+
 	return nil
 }
 
 func configIndex(state *lua.LState) int {
 	config := checkConfig(state)
-	key := state.CheckString(2)
+	key := helper.GetString(2, state)
 
-	switch key {
+	if config == nil || key == nil {
+		return 0
+	}
+
+	switch *key {
 	case "Hostname":
 		state.Push(lua.LString(config.Hostname))
 	case "Port":
