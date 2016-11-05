@@ -1,13 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"os/signal"
 	"syscall"
 
+	"io/ioutil"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/modules/geoffrey"
+	"github.com/jriddick/geoffrey/modules/plugin"
 	"github.com/yuin/gluamapper"
 	"github.com/yuin/gopher-lua"
 )
@@ -40,6 +44,7 @@ func init() {
 }
 
 type config struct {
+	PluginFolder string
 }
 
 func main() {
@@ -50,8 +55,15 @@ func main() {
 	// Close the Lua VM when we are done
 	defer state.Close()
 
+	// Remove unsafe modules
+	state.DoString("coroutine=nil;debug=nil;io=nil;os=nil")
+
+	// Add the plugin module
+	plugins := plugin.NewPluginModule()
+	plugins.Register(state)
+
 	// Add the geoffrey module
-	bots := geoffrey.NewGeoffrey()
+	bots := geoffrey.NewGeoffrey(plugins)
 	bots.Register(state)
 
 	// Load const.lua
@@ -70,14 +82,26 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// Read all plugins
+	if files, err := ioutil.ReadDir(cfg.PluginFolder); err != nil {
+		log.Fatalf("could not open plugin directory '%s': %s", cfg.PluginFolder, err)
+	} else {
+		for _, file := range files {
+			if !file.IsDir() {
+				if err := state.DoFile(fmt.Sprintf("%s/%s", cfg.PluginFolder, file.Name())); err != nil {
+					log.Errorf("could not run file '%s': %s", file.Name(), err)
+				}
+			}
+		}
+	}
+
 	// Load geoffrey.lua
 	if err := state.DoFile("geoffrey.lua"); err != nil {
 		log.Fatalln(err)
 	}
 
-	log.Println("geoffrey is now running")
+	log.Infoln("Geoffrey is now running...")
 
-	// Block until program exists (Ctrl-C)
 	for {
 	}
 }
