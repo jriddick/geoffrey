@@ -48,8 +48,6 @@ func PushConfig(config *Config, state *lua.LState) {
 	state.Push(data)
 }
 
-// checkBot will check wether the first argument is a *Bot
-// or not.
 func checkBot(state *lua.LState) *Bot {
 	data := state.CheckUserData(1)
 	if v, ok := data.Value.(*Bot); ok {
@@ -59,8 +57,6 @@ func checkBot(state *lua.LState) *Bot {
 	return nil
 }
 
-// checkConfig will check wether the first argument is of type *Config
-// and return it.
 func checkConfig(state *lua.LState) *Config {
 	data := state.CheckUserData(1)
 	if v, ok := data.Value.(*Config); ok {
