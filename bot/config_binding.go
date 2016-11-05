@@ -1,16 +1,6 @@
 package bot
 
-import "github.com/yuin/gopher-lua"
-
-// RegisterBot will register the Bot struct to Lua
-func RegisterBot(state *lua.LState) {
-	// Create the Metatable
-	meta := state.NewTypeMetatable("bot")
-	state.SetGlobal("bot", meta)
-
-	// Bind our functions
-	state.SetField(meta, "__index", state.NewFunction(botIndex))
-}
+import lua "github.com/yuin/gopher-lua"
 
 // RegisterConfig will register the Config struct to Lua
 func RegisterConfig(state *lua.LState) {
@@ -20,19 +10,6 @@ func RegisterConfig(state *lua.LState) {
 
 	// Bind our functions
 	state.SetField(meta, "__index", state.NewFunction(configIndex))
-}
-
-// PushBot will push an existing *Bot onto the Lua stack
-func PushBot(bot *Bot, state *lua.LState) {
-	// Create the bot user data
-	data := state.NewUserData()
-	data.Value = bot
-
-	// Set the Metatable
-	state.SetMetatable(data, state.GetTypeMetatable("bot"))
-
-	// Push the bot
-	state.Push(data)
 }
 
 // PushConfig will push the given config to the Lua stack
@@ -48,15 +25,6 @@ func PushConfig(config *Config, state *lua.LState) {
 	state.Push(data)
 }
 
-func checkBot(state *lua.LState) *Bot {
-	data := state.CheckUserData(1)
-	if v, ok := data.Value.(*Bot); ok {
-		return v
-	}
-	state.ArgError(1, "bot expected")
-	return nil
-}
-
 func checkConfig(state *lua.LState) *Config {
 	data := state.CheckUserData(1)
 	if v, ok := data.Value.(*Config); ok {
@@ -64,41 +32,6 @@ func checkConfig(state *lua.LState) *Config {
 	}
 	state.ArgError(1, "config expected")
 	return nil
-}
-
-func botSend(state *lua.LState) int {
-	bot := checkBot(state)
-	rcv := state.CheckString(2)
-	msg := state.CheckString(3)
-
-	bot.Send(rcv, msg)
-	return 0
-}
-
-func botJoin(state *lua.LState) int {
-	bot := checkBot(state)
-	channel := state.CheckString(2)
-
-	bot.Join(channel)
-	return 0
-}
-
-func botIndex(state *lua.LState) int {
-	bot := checkBot(state)
-	key := state.CheckString(2)
-
-	switch key {
-	case "send":
-		state.Push(state.NewFunction(botSend))
-	case "join":
-		state.Push(state.NewFunction(botJoin))
-	case "config":
-		PushConfig(&bot.config, state)
-	default:
-		state.Push(lua.LNil)
-	}
-
-	return 1
 }
 
 func configIndex(state *lua.LState) int {
