@@ -81,6 +81,8 @@ func (g *Geoffrey) Add(L *lua.LState) int {
 					event = irc.Part
 				case "OnNameList":
 					event = irc.Namreply
+				case "OnNotice":
+					event = irc.Notice
 				}
 
 				bots[L.ToString(1)].AddLuaHandler(event, handler)
