@@ -128,7 +128,7 @@ func (b *Bot) Handler() {
 			}
 
 			// Go through all Lua handlers
-			go func() {
+			go func(bot *Bot, state *lua.LState) {
 				for _, handler := range b.LuaHandlers[msg.Command] {
 					// Run the Lua handler
 					go func(state *lua.LState, handler *lua.LFunction, bot *Bot) {
@@ -151,9 +151,9 @@ func (b *Bot) Handler() {
 
 						// Close the thread
 						state.Close()
-					}(b.state.NewThread(), handler, b)
+					}(state.NewThread(), handler, bot)
 				}
-			}()
+			}(b, b.state.NewThread())
 		}
 	}
 }
