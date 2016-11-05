@@ -1,7 +1,13 @@
 package bot
 
-import "github.com/yuin/gopher-lua"
-import "github.com/jriddick/geoffrey/msg"
+import (
+	"reflect"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/jriddick/geoffrey/helper"
+	"github.com/jriddick/geoffrey/msg"
+	"github.com/yuin/gopher-lua"
+)
 
 // RegisterMessage will register msg.Message struct to Lua
 func RegisterMessage(state *lua.LState) {
@@ -46,28 +52,50 @@ func pushPrefix(prefix *msg.Prefix, state *lua.LState) {
 }
 
 func checkMessage(state *lua.LState) *msg.Message {
-	data := state.CheckUserData(1)
-	if v, ok := data.Value.(*msg.Message); ok {
-		return v
+	// Get the logger
+	logger := log.WithField("file", state.Where(1))
+
+	// Try to get userdata
+	data := helper.GetUserData(1, state)
+	if data != nil {
+		// Check if userdata is the right type
+		if msg, ok := data.Value.(*msg.Message); ok {
+			return msg
+		}
+
+		logger.Errorf("Expected userdata type of msg.Message but we got '%s'", reflect.TypeOf(data.Value).Name())
 	}
-	state.ArgError(1, "message expected")
+
 	return nil
 }
 
 func checkPrefix(state *lua.LState) *msg.Prefix {
-	data := state.CheckUserData(1)
-	if v, ok := data.Value.(*msg.Prefix); ok {
-		return v
+	// Get the logger
+	logger := log.WithField("file", state.Where(1))
+
+	// Try to get userdata
+	data := helper.GetUserData(1, state)
+	if data != nil {
+		// Check if userdata is the right type
+		if prefix, ok := data.Value.(*msg.Prefix); ok {
+			return prefix
+		}
+
+		logger.Errorf("Expected userdata type of msg.Prefix but we got '%s'", reflect.TypeOf(data.Value).Name())
 	}
-	state.ArgError(1, "prefix expected")
+
 	return nil
 }
 
 func messageIndex(state *lua.LState) int {
 	msg := checkMessage(state)
-	key := state.CheckString(2)
+	key := helper.GetString(2, state)
 
-	switch key {
+	if key == nil || msg == nil {
+		return 0
+	}
+
+	switch *key {
 	case "Command":
 		state.Push(lua.LString(msg.Command))
 	case "Params":
@@ -95,9 +123,13 @@ func messageIndex(state *lua.LState) int {
 
 func prefixIndex(state *lua.LState) int {
 	prefix := checkPrefix(state)
-	key := state.CheckString(2)
+	key := helper.GetString(2, state)
 
-	switch key {
+	if prefix == nil || key == nil {
+		return 0
+	}
+
+	switch *key {
 	case "Name":
 		state.Push(lua.LString(prefix.Name))
 	case "User":
