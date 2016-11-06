@@ -19,14 +19,7 @@ cache:
   - vendor
 
 before_deploy:
-  - GOOS=linux GOARCH=386 go build -o geoffrey-linux32 geoffrey.go
-  - GOOS=linux GOARCH=amd64 go build -o geoffrey-linux64 geoffrey.go
-  - GOOS=windows GOARCH=386 go build -o geoffrey-win32.exe geoffrey.go
-  - GOOS=windows GOARCH=amd64 go build -o geoffrey-win64.exe geoffrey.go
-  - zip geoffrey-${TRAVIS_TAG:1}-linux32.zip geoffrey-linux32 const.lua config.lua geoffrey.lua plugins
-  - zip geoffrey-${TRAVIS_TAG:1}-linux64.zip geoffrey-linux64 const.lua config.lua geoffrey.lua plugins
-  - zip geoffrey-${TRAVIS_TAG:1}-win32.zip geoffrey-win32.exe const.lua config.lua geoffrey.lua plugins
-  - zip geoffrey-${TRAVIS_TAG:1}-win64.zip geoffrey-win64.exe const.lua config.lua geoffrey.lua plugins
+  - make zip
 
 deploy:
   provider: releases
@@ -35,6 +28,7 @@ deploy:
   - geoffrey-${TRAVIS_TAG:1}-linux64.zip
   - geoffrey-${TRAVIS_TAG:1}-win64.zip
   - geoffrey-${TRAVIS_TAG:1}-win32.zip
+  - geoffrey-${TRAVIS_TAG:1}-darwin.zip
   skip_cleanup: true
   on:
     tags: true
