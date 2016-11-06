@@ -5,7 +5,7 @@ local echo = {
     Desciption = "Echoes everything it hears",
     Bind = {
         OnMessage = function (bot, msg)
-            bot:send("#geoffrey", msg.Trailing)
+            bot:send(msg.Params[1], msg.Trailing)
         end
     }
 }
