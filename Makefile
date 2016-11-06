@@ -1,5 +1,5 @@
 NAME = geoffrey
-VERSION = 0.1.0
+VERSION = $(TRAVIS_TAG)
 EXTRA = const.lua config.lua geoffrey.lua plugins/*
 WINDOWS := win64 win32
 LINUX := linux32 linux64
