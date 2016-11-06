@@ -1,22 +1,46 @@
 language: go
 go:
-  - 1.6
-  - 1.7
-  - tip
+- 1.6
+- 1.7
+- tip
 
 install:
-  - go get -v github.com/Masterminds/glide
-  - glide install
+- go get -v github.com/Masterminds/glide
+- glide install
 
 before_script:
-  - go vet $(glide nv)
+- go vet $(glide nv)
 
 script:
-  - go test $(glide nv)
+- go test $(glide nv)
 
 cache:
   directories:
   - vendor
+
+before_deploy:
+  - GOOS=linux GOARCH=386 go build -o geoffrey-linux32 geoffrey.go
+  - GOOS=linux GOARCH=amd64 go build -o geoffrey-linux64 geoffrey.go
+  - GOOS=windows GOARCH=386 go build -o geoffrey-win32.exe geoffrey.go
+  - GOOS=windows GOARCH=amd64 go build -o geoffrey-win64.exe geoffrey.go
+  - zip geoffrey-${TRAVIS_TAG:1}-linux32.zip geoffrey-linux32 const.lua config.lua geoffrey.lua plugins
+  - zip geoffrey-${TRAVIS_TAG:1}-linux64.zip geoffrey-linux64 const.lua config.lua geoffrey.lua plugins
+  - zip geoffrey-${TRAVIS_TAG:1}-win32.zip geoffrey-win32.exe const.lua config.lua geoffrey.lua plugins
+  - zip geoffrey-${TRAVIS_TAG:1}-win64.zip geoffrey-win64.exe const.lua config.lua geoffrey.lua plugins
+
+deploy:
+  provider: releases
+  file:
+  - geoffrey-${TRAVIS_TAG:1}-linux32.zip
+  - geoffrey-${TRAVIS_TAG:1}-linux64.zip
+  - geoffrey-${TRAVIS_TAG:1}-win64.zip
+  - geoffrey-${TRAVIS_TAG:1}-win32.zip
+  skip_cleanup: true
+  on:
+    tags: true
+    condition: $TRAVIS_GO_VERSION == "1.7"
+  api_key:
+    secure: t7/mUrgN6ec3ox2Jd2TvrnBme/8d74PIVNOmp/AB+oqrXD0HKa/iF0DI7aXQC440C43lpzLIv65Wb6SPpNezy2V/MbMEsWXpwiSl+CTcoFP6Fg/WK0+tKkuNZT7CfQ0KU1PBx5RSHTp6H0ZUi/1WIgMYrEU+RppdnSXq2fvoM25JIxn3Go36xMsVsAMnSIY1+Z9Uppj+8b4D93UneSGaCUSDnAny1gaHYhqucjMuedQKTeOFpu3ux2oc4/09ubFHi6VPdOCLHebbUcSUfC+EWf3D6znxOBmzqaV/yz+7FqjBsAPpE+WbO0mGyaI6u+rE5AUzkh+pgHC4KH02UdC7OMtOVN36axnzGTuLyEdB0vcS7zOHWGMNkNT9jjxfYMDJimsgPidPU57/1Dr7FoPDxdPcUQqydpY1+8FMLh3eVU/prU2kheGK/kD/Yc37nVTLi+nbD0g/lkcCTImzZAFbHFQtJdvdXD92UdFW/Gy2jKAOxJb3S2JTlE9P+kzK/9g0QO0X6r3veZQP3yWPxO27VbmlaPWSzSnoWSmzgsDJtvjFC6QcfVdpp12uR2LcdIb4lWzymK1TyIO0ktHzzhVfHmFFE24KDpWX3uWKJcpGPX2ZJQ+NO5nZ/a8VlV0NHuvPn6+utjjmXvfJmbEiuuK4b9PEpl5Vkz126x4QEzai5HM=
 
 notifications:
   pushover:
