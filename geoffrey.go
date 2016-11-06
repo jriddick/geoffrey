@@ -71,28 +71,28 @@ func main() {
 
 	// Load const.lua
 	if err := state.DoFile("const.lua"); err != nil {
-		log.Fatalln(err)
+		log.WithError(err).Fatalln("Could not run const.lua")
 	}
 
 	// Load config.lua
 	if err := state.DoFile("config.lua"); err != nil {
-		log.Fatalln(err)
+		log.WithError(err).Fatalln("Could not run config.lua")
 	}
 
 	// Map the configuration struct
 	var cfg config
 	if err := gluamapper.Map(state.GetGlobal("config").(*lua.LTable), &cfg); err != nil {
-		log.Fatalln(err)
+		log.WithError(err).Fatalln("Could not parse configuration struct")
 	}
 
 	// Read all plugins
 	if files, err := ioutil.ReadDir(cfg.PluginFolder); err != nil {
-		log.Fatalf("could not open plugin directory '%s': %s", cfg.PluginFolder, err)
+		log.WithError(err).Fatalf("Could not open plugin directory '%s'", cfg.PluginFolder)
 	} else {
 		for _, file := range files {
 			if !file.IsDir() {
 				if err := state.DoFile(fmt.Sprintf("%s/%s", cfg.PluginFolder, file.Name())); err != nil {
-					log.Errorf("could not run file '%s': %s", file.Name(), err)
+					log.WithError(err).Errorf("Could not run file '%s'", file.Name())
 				}
 			}
 		}
@@ -100,7 +100,7 @@ func main() {
 
 	// Load geoffrey.lua
 	if err := state.DoFile("geoffrey.lua"); err != nil {
-		log.Fatalln(err)
+		log.WithError(err).Fatalln("Could not run geoffrey.lua")
 	}
 
 	log.Infoln("Geoffrey is now running...")
