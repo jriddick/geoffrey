@@ -1,5 +1,5 @@
-hash: e33887e0c2b38afb1686ba648ea94d5f460bc7d13664f9ec510a849c1f861fdf
-updated: 2016-11-04T17:58:46.7719956+01:00
+hash: f5fe6df3d24f3ba85061272fdf9ac794f17b6e18626666a7eff89406c31cc49f
+updated: 2016-11-06T01:39:38.9822978+01:00
 imports:
 - name: github.com/bndr/gopencils
   version: 102f2a4200dcd5b943fcd09fe0098cae05f3b627
@@ -7,8 +7,6 @@ imports:
   version: f3009df150dadf309fdee4a54ed65c124afad715
 - name: github.com/Sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
-- name: github.com/spf13/viper
-  version: 651d9d916abc3c3d6a91a12549495caba5edffd2
 - name: github.com/yuin/gluamapper
   version: d836955830e75240d46ce9f0e6d148d94f2e1d3a
 - name: github.com/yuin/gopher-lua
