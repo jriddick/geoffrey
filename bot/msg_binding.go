@@ -101,7 +101,7 @@ func messageIndex(state *lua.LState) int {
 	case "Params":
 		params := state.NewTable()
 		for key, param := range msg.Params {
-			params.RawSetInt(key, lua.LString(param))
+			params.RawSetInt(key+1, lua.LString(param))
 		}
 		state.Push(params)
 	case "Trailing":

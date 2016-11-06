@@ -74,7 +74,7 @@ func configIndex(state *lua.LState) int {
 	case "Channels":
 		channels := state.NewTable()
 		for key, value := range config.Channels {
-			channels.RawSetInt(key, lua.LString(value))
+			channels.RawSetInt(key+1, lua.LString(value))
 		}
 		state.Push(channels)
 	case "Timeout":
