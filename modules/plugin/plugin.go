@@ -37,7 +37,8 @@ func (p *Plugin) Register(state *lua.LState) {
 func (p *Plugin) loader(state *lua.LState) int {
 	// Bind the functions to the module
 	module := state.SetFuncs(state.NewTable(), map[string]lua.LGFunction{
-		"add": p.Add,
+		"add":  p.Add,
+		"help": p.Help,
 	})
 
 	// Push the module, exposing it to the Lua state
