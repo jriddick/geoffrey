@@ -48,6 +48,7 @@ func init() {
 
 type config struct {
 	PluginFolder string
+	LogLevel     uint8
 }
 
 func main() {
@@ -84,6 +85,9 @@ func main() {
 	if err := gluamapper.Map(state.GetGlobal("config").(*lua.LTable), &cfg); err != nil {
 		log.WithError(err).Fatalln("Could not parse configuration struct")
 	}
+
+	// Change the log level
+	log.SetLevel(log.Level(cfg.LogLevel))
 
 	// Read all plugins
 	if files, err := ioutil.ReadDir(cfg.PluginFolder); err != nil {

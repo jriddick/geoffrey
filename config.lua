@@ -1,3 +1,4 @@
 config = {
-    PluginFolder = "plugins"
+    PluginFolder = "plugins",
+    LogLevel = INFO
 }

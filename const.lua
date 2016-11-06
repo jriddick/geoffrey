@@ -1,7 +1,7 @@
 -- LOG LEVELS
-DEBUG   = 1
-INFO    = 2
+DEBUG   = 5
+INFO    = 4
 WARN    = 3
-ERROR   = 4
-FATAL   = 5
-PANIC   = 6
+ERROR   = 2
+FATAL   = 1
+PANIC   = 0
