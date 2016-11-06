@@ -24,11 +24,11 @@ before_deploy:
 deploy:
   provider: releases
   file:
-  - geoffrey-${TRAVIS_TAG:1}-linux32.zip
-  - geoffrey-${TRAVIS_TAG:1}-linux64.zip
-  - geoffrey-${TRAVIS_TAG:1}-win64.zip
-  - geoffrey-${TRAVIS_TAG:1}-win32.zip
-  - geoffrey-${TRAVIS_TAG:1}-darwin.zip
+  - geoffrey-${TRAVIS_TAG}-linux32.zip
+  - geoffrey-${TRAVIS_TAG}-linux64.zip
+  - geoffrey-${TRAVIS_TAG}-win64.zip
+  - geoffrey-${TRAVIS_TAG}-win32.zip
+  - geoffrey-${TRAVIS_TAG}-darwin.zip
   skip_cleanup: true
   on:
     tags: true
