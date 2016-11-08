@@ -107,10 +107,12 @@ func (m *Mockd) handleClient(client net.Conn) {
 					userReceived = false
 				}
 
+				if msg.Command != "NICK" && msg.Command != "USER" {
+					client.Write([]byte(fmt.Sprintf("%s\r\n", raw)))
+				}
+
 				continue
 			}
-
-			client.Write([]byte(fmt.Sprintf("%s\r\n", raw)))
 		}
 	}
 }
