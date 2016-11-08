@@ -1,5 +1,5 @@
-hash: f5fe6df3d24f3ba85061272fdf9ac794f17b6e18626666a7eff89406c31cc49f
-updated: 2016-11-06T01:39:38.9822978+01:00
+hash: 45063f75224f26886556f8e26c469a6e83aa4db106cc0caf09273b389148af5a
+updated: 2016-11-08T18:17:54.4531031+01:00
 imports:
 - name: github.com/bndr/gopencils
   version: 102f2a4200dcd5b943fcd09fe0098cae05f3b627
@@ -7,6 +7,12 @@ imports:
   version: f3009df150dadf309fdee4a54ed65c124afad715
 - name: github.com/Sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
+- name: github.com/smartystreets/goconvey
+  version: d4c757aa9afd1e2fc1832aaab209b5794eb336e1
+  subpackages:
+  - convey
+  - convey/gotest
+  - convey/reporting
 - name: github.com/yuin/gluamapper
   version: d836955830e75240d46ce9f0e6d148d94f2e1d3a
 - name: github.com/yuin/gopher-lua
@@ -20,6 +26,12 @@ imports:
   subpackages:
   - unix
 testImports:
+- name: github.com/gopherjs/gopherjs
+  version: e34a5cd6a1bc7c4fde759f2d3039852fc68b5fcc
+  subpackages:
+  - js
+- name: github.com/jtolds/gls
+  version: 8ddce2a84170772b95dd5d576c48d517b22cac63
 - name: github.com/onsi/ginkgo
   version: a8ccd817611666211fdf6e6a752174a0db8374a8
   subpackages:
@@ -53,5 +65,10 @@ testImports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/smartystreets/assertions
+  version: 2063fd1cc7c975db70502811a34b06ad034ccdf2
+  subpackages:
+  - internal/go-render/render
+  - internal/oglematchers
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0

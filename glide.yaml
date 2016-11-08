@@ -5,3 +5,5 @@ import:
 - package: github.com/Sirupsen/logrus
   version: ^0.11.0
 - package: github.com/yuin/gluamapper
+- package: github.com/smartystreets/goconvey
+  version: ^1.6.2
