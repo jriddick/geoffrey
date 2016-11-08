@@ -3,12 +3,9 @@ package msg_test
 import (
 	. "github.com/jriddick/geoffrey/msg"
 
-	"log"
-	"strings"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var MessageTests = [...]*struct {
@@ -302,62 +299,41 @@ type Test struct {
 
 var tests []Test
 
-var _ = Describe("Msg", func() {
-	It("ParseMessage", func() {
-		for _, test := range MessageTests {
-			log.Printf("%s\n", strings.TrimSpace(test.Message))
-			msg, err := ParseMessage(test.Message)
+func TestMessageParser(t *testing.T) {
+	Convey("With the IRC message parser", t, func() {
+		Convey("Given an IRC message", func() {
+			for _, test := range MessageTests {
+				Convey(test.Message, func() {
+					msg, err := ParseMessage(test.Message)
 
-			if test.ShouldFail {
-				Expect(err).To(HaveOccurred())
-				Expect(msg).To(BeNil())
-			} else {
-				Expect(err).NotTo(HaveOccurred())
-				Expect(msg).NotTo(BeNil())
-
-				Expect(msg.Tags).To(Equal(test.Result.Tags))
-				Expect(msg.Prefix).To(Equal(test.Result.Prefix))
-				Expect(msg.Command).To(Equal(test.Result.Command))
-				Expect(msg.Params).To(Equal(test.Result.Params))
-				Expect(msg.Trailing).To(Equal(test.Result.Trailing))
+					if test.ShouldFail {
+						So(err, ShouldNotBeNil)
+						So(msg, ShouldBeNil)
+					} else {
+						So(err, ShouldBeNil)
+						So(msg, ShouldNotBeNil)
+						So(msg, ShouldResemble, test.Result)
+					}
+				})
 			}
-		}
+		})
+
+		Convey("Given an message that exceeeds max length", func() {
+			msg, err := ParseMessage(`:Namename COMMAND arg6 arg7 :Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message\r\n
+			Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message
+			Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message
+			Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message
+			Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message
+			Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message
+			Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message
+			Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message
+			Message Message Message\r\n`)
+			So(err, ShouldNotBeNil)
+			So(err.Error(), ShouldEqual, "message is too long")
+			So(msg, ShouldBeNil)
+		})
 	})
-
-	It("should be able to convert IRC message to bytes", func() {
-		m := &Message{
-			Tags: map[string]string{
-				"hello": "world",
-				"money": "",
-			},
-			Prefix: &Prefix{
-				Name: "oh",
-				User: "fi!loh",
-				Host: "mo@ho.org",
-			},
-			Command:  "PRIVMSG",
-			Params:   []string{"#channel"},
-			Trailing: "Hello!",
-		}
-
-		// Turn it into a string
-		str := string(m.Bytes())
-
-		// Parse the Message
-		res, err := ParseMessage(str)
-
-		// Make sure it parsed
-		Expect(err).ToNot(HaveOccurred())
-		Expect(res).ToNot(BeNil())
-
-		// Make sure we get the result we expect
-		Expect(res.Tags).To(Equal(m.Tags))
-		Expect(res.Prefix).To(Equal(m.Prefix))
-		Expect(res.Command).To(Equal(m.Command))
-		Expect(res.Params).To(Equal(m.Params))
-		Expect(res.Trailing).To(Equal(m.Trailing))
-	})
-})
+}
 
 func BenchmarkParseMessage_short(b *testing.B) {
 	b.ReportAllocs()
