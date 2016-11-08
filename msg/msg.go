@@ -137,6 +137,11 @@ func ParseMessage(raw string) (*Message, error) {
 		return nil, fmt.Errorf("message is too long")
 	}
 
+	// Make sure its not empty
+	if len(strings.TrimSpace(raw)) == 0 {
+		return nil, fmt.Errorf("message is empty")
+	}
+
 	// Create the message
 	message := new(Message)
 

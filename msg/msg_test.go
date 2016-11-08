@@ -328,9 +328,32 @@ func TestMessageParser(t *testing.T) {
 			Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message
 			Message Message Message Message Message Message Message Message Message Message Message Message Message Message Message
 			Message Message Message\r\n`)
-			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "message is too long")
-			So(msg, ShouldBeNil)
+
+			Convey("It should fail with an error", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "message is too long")
+				So(msg, ShouldBeNil)
+			})
+		})
+
+		Convey("Given an empty message", func() {
+			msg, err := ParseMessage("")
+
+			Convey("It should fail with an error", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "message is empty")
+				So(msg, ShouldBeNil)
+			})
+		})
+
+		Convey("Given an message contains only whitespace", func() {
+			msg, err := ParseMessage("         ")
+
+			Convey("It should fail with an error", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "message is empty")
+				So(msg, ShouldBeNil)
+			})
 		})
 	})
 }
