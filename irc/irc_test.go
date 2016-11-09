@@ -1,0 +1,100 @@
+package irc
+
+import (
+	"testing"
+	"time"
+
+	"github.com/jriddick/geoffrey/mockd"
+	. "github.com/smartystreets/goconvey/convey"
+)
+
+var (
+	defaultConfig = Config{
+		Hostname:           "127.0.0.1",
+		Port:               5000,
+		Secure:             false,
+		InsecureSkipVerify: false,
+		Timeout:            time.Second * 30,
+		TimeoutLimit:       5,
+	}
+)
+
+func TestClient(t *testing.T) {
+	Convey("With the default IRC client", t, func() {
+		// Create the mockd server
+		mockd := mockd.NewMockd(5000)
+
+		// Start listening
+		So(mockd.Listen(), ShouldBeNil)
+
+		// Start accepting connections
+		go mockd.Handle()
+
+		Convey("It should be able to connect", func() {
+			// Open client
+			client := NewIRC(defaultConfig)
+
+			// Connect the client
+			So(client.Connect(), ShouldBeNil)
+			defer client.Disconnect()
+
+			// Get the reader channel
+			reader := client.Reader()
+
+			// Read from the server
+			So(<-reader, ShouldNotBeNil)
+		})
+
+		Convey("It should be able to register", func() {
+			// Open client
+			client := NewIRC(defaultConfig)
+
+			// Connect to the server
+			So(client.Connect(), ShouldBeNil)
+			defer client.Disconnect()
+
+			// Get the reader and writer channel
+			reader := client.Reader()
+			writer := client.Writer()
+
+			// Read the first message
+			So(<-reader, ShouldNotBeNil)
+
+			// Send our registration
+			writer <- "NICK geoffrey"
+			writer <- "USER geoffrey 0 * :geoffrey"
+
+			// Wait for our verification
+			result := <-reader
+
+			// Verify that we got what we needed
+			So(result, ShouldNotBeNil)
+			So(result.String(), ShouldEqual, ":geoffrey.com 001 Geoffrey :Welcome to the Geoffrey IRC Network!")
+		})
+
+		Convey("It should be able to reconnect", func() {
+			// Open client
+			client := NewIRC(defaultConfig)
+
+			// Connect
+			So(client.Connect(), ShouldBeNil)
+			defer client.Disconnect()
+
+			// Get the reader
+			reader := client.Reader()
+
+			// Wait until we get opening
+			So(<-reader, ShouldNotBeNil)
+
+			// Reconnect
+			So(client.Reconnect(), ShouldBeNil)
+
+			// Wait until we get opening
+			So(<-reader, ShouldNotBeNil)
+		})
+
+		Reset(func() {
+			So(mockd.Stop(), ShouldBeNil)
+		})
+	})
+}
