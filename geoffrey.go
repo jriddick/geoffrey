@@ -3,18 +3,8 @@ package main
 import (
 	"os"
 
-	"sync"
-
-	"os/signal"
-	"syscall"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/bot"
-)
-
-var (
-	signals = make(chan os.Signal, 1)
-	wait    sync.WaitGroup
 )
 
 func init() {
@@ -23,17 +13,6 @@ func init() {
 
 	// Set the log level to debug
 	log.SetLevel(log.DebugLevel)
-
-	// Get signals
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
-
-	go func() {
-		// Wait until signal
-		<-signals
-
-		// Let the program exit
-		wait.Done()
-	}()
 }
 
 func main() {
@@ -53,16 +32,19 @@ func main() {
 		ReconnectLimit:     1000,
 	}
 
+	// Get the bot manager
+	manager := bot.NewManager()
+
+	// Create the first bot
 	bot := bot.NewBot(config)
 
-	if err := bot.Connect(); err != nil {
-		log.Fatalf("Could not connect: %v\n", err)
+	// Add the bot to the manager
+	if err := manager.Add("oftc", bot); err != nil {
+		log.Fatalf("Error: %v (%s)", err, "oftc")
 	}
 
-	// Wait until we should exit
-	wait.Add(1)
-	wait.Wait()
-
-	// Stop the bot
-	bot.Close()
+	// Listen and run
+	if err := manager.Run(); err != nil {
+		log.Fatalf("Error: %v", err)
+	}
 }

@@ -17,11 +17,12 @@ type MessageHandler func(*Bot, string)
 
 // Bot is the structure for an IRC bot
 type Bot struct {
-	client *irc.IRC
-	writer chan<- string
-	reader <-chan *msg.Message
-	stop   chan struct{}
-	config Config
+	client       *irc.IRC
+	writer       chan<- string
+	reader       <-chan *msg.Message
+	stop         chan struct{}
+	config       Config
+	disconnected chan struct{}
 }
 
 // NewBot creates a new bot
@@ -67,6 +68,9 @@ func (b *Bot) Handler() {
 
 			// Disconnect the client
 			b.client.Disconnect()
+
+			// Mark that we are disconnected
+			close(b.disconnected)
 			break
 		case msg := <-b.reader:
 			// Log all messages
@@ -122,7 +126,8 @@ func (b *Bot) User(user, name string) {
 	b.writer <- "USER " + user + " 0 * :" + name
 }
 
-// Close will close the bot
+// Close will disconnect the bot from the server
 func (b *Bot) Close() {
 	close(b.stop)
+	<-b.disconnected
 }
