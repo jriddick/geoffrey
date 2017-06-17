@@ -9,7 +9,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/msg"
-	"github.com/yuin/gopher-lua"
 )
 
 // MessageHandler is the function type for
@@ -18,17 +17,15 @@ type MessageHandler func(*Bot, string)
 
 // Bot is the structure for an IRC bot
 type Bot struct {
-	client      *irc.IRC
-	writer      chan<- string
-	reader      <-chan *msg.Message
-	stop        chan struct{}
-	config      Config
-	LuaHandlers map[string][]*lua.LFunction
-	state       *lua.LState
+	client *irc.IRC
+	writer chan<- string
+	reader <-chan *msg.Message
+	stop   chan struct{}
+	config Config
 }
 
 // NewBot creates a new bot
-func NewBot(config Config, state *lua.LState) *Bot {
+func NewBot(config Config) *Bot {
 	// Create the bot
 	bot := &Bot{
 		client: irc.NewIRC(irc.Config{
@@ -39,16 +36,9 @@ func NewBot(config Config, state *lua.LState) *Bot {
 			Timeout:            time.Second * time.Duration(config.Timeout),
 			TimeoutLimit:       config.TimeoutLimit,
 		}),
-		config:      config,
-		stop:        make(chan struct{}),
-		LuaHandlers: make(map[string][]*lua.LFunction),
-		state:       state,
+		config: config,
+		stop:   make(chan struct{}),
 	}
-
-	// Register the bot struct
-	RegisterBot(state)
-	RegisterConfig(state)
-	RegisterMessage(state)
 
 	return bot
 }
@@ -81,34 +71,6 @@ func (b *Bot) Handler() {
 		case msg := <-b.reader:
 			// Log all messages
 			log.Debugln(msg.String())
-
-			// Go through all Lua handlers
-			go func(bot *Bot, state *lua.LState) {
-				for _, handler := range bot.LuaHandlers[msg.Command] {
-					// Run the Lua handler
-					go func(state *lua.LState, handler *lua.LFunction, bot *Bot) {
-						// Push the handler function
-						state.Push(handler)
-
-						// Create the metatable for our bot
-						value := state.NewUserData()
-						value.Value = bot
-						state.SetMetatable(value, state.GetTypeMetatable("bot"))
-
-						// Push the bot
-						state.Push(value)
-
-						// Push the message
-						PushMessage(msg, state)
-
-						// Call the function
-						state.Call(2, 0)
-
-						// Close the thread
-						state.Close()
-					}(state.NewThread(), handler, bot)
-				}
-			}(b, b.state.NewThread())
 		}
 	}
 }
@@ -158,11 +120,6 @@ func (b *Bot) User(user, name string) {
 
 	// Send the command
 	b.writer <- "USER " + user + " 0 * :" + name
-}
-
-// AddLuaHandler registers a Lua handler for the OnMessage event
-func (b *Bot) AddLuaHandler(command string, handler *lua.LFunction) {
-	b.LuaHandlers[command] = append(b.LuaHandlers[command], handler)
 }
 
 // Close will close the bot
