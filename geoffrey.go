@@ -39,6 +39,7 @@ func main() {
 	// Bind our two handlers
 	manager.AddHandler(plugins.RegistrationHandler)
 	manager.AddHandler(plugins.JoinHandler)
+	manager.AddHandler(plugins.PingHandler)
 
 	// Create the first bot
 	bot := bot.NewBot(config)
