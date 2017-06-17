@@ -23,6 +23,7 @@ type Bot struct {
 	stop         chan struct{}
 	config       Config
 	disconnected chan struct{}
+	handlers     map[string]Handler
 }
 
 // NewBot creates a new bot
@@ -37,8 +38,10 @@ func NewBot(config Config) *Bot {
 			Timeout:            time.Second * time.Duration(config.Timeout),
 			TimeoutLimit:       config.TimeoutLimit,
 		}),
-		config: config,
-		stop:   make(chan struct{}),
+		config:       config,
+		stop:         make(chan struct{}),
+		handlers:     make(map[string]Handler),
+		disconnected: make(chan struct{}),
 	}
 
 	return bot
@@ -68,13 +71,26 @@ func (b *Bot) Handler() {
 
 			// Disconnect the client
 			b.client.Disconnect()
-
-			// Mark that we are disconnected
-			close(b.disconnected)
 			break
 		case msg := <-b.reader:
 			// Log all messages
 			log.Debugln(msg.String())
+
+			// Run all handlers
+			for _, handler := range b.handlers {
+				if msg.Command == handler.Event {
+					// Mark start time
+					start := time.Now()
+
+					// Execute the handler
+					if err := handler.Run(b, msg); err != nil {
+						log.Errorf("%s: %v", handler.Name, err)
+					}
+
+					// Log the execution time
+					log.Infof("Handler '%s' completed in %s", handler.Name, time.Since(start))
+				}
+			}
 		}
 	}
 }
@@ -129,5 +145,21 @@ func (b *Bot) User(user, name string) {
 // Close will disconnect the bot from the server
 func (b *Bot) Close() {
 	close(b.stop)
-	<-b.disconnected
+}
+
+// Config returns the configuration
+func (b *Bot) Config() Config {
+	return b.config
+}
+
+// AddHandler adds handler to the bot
+func (b *Bot) AddHandler(handler Handler) error {
+	// Do not add duplicate handlers
+	if _, ok := b.handlers[handler.Name]; ok {
+		return ErrHandlerExists
+	}
+
+	// Add the handler to the bot
+	b.handlers[handler.Name] = handler
+	return nil
 }

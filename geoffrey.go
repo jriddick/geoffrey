@@ -5,6 +5,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/bot"
+	"github.com/jriddick/geoffrey/plugins"
 )
 
 func init() {
@@ -34,6 +35,10 @@ func main() {
 
 	// Get the bot manager
 	manager := bot.NewManager()
+
+	// Bind our two handlers
+	manager.AddHandler(plugins.RegistrationHandler)
+	manager.AddHandler(plugins.JoinHandler)
 
 	// Create the first bot
 	bot := bot.NewBot(config)
