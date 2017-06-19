@@ -72,23 +72,25 @@ func (b *Bot) Handler() {
 			// Disconnect the client
 			b.client.Disconnect()
 			break
-		case msg := <-b.reader:
+		case message := <-b.reader:
 			// Log all messages
-			log.Debugln(msg.String())
+			log.Debugln(message.String())
 
 			// Run all handlers
 			for _, handler := range b.handlers {
-				if msg.Command == handler.Event {
-					// Mark start time
-					start := time.Now()
+				if message.Command == handler.Event {
+					go func(bot *Bot, msg *msg.Message, handler Handler) {
+						// Mark start time
+						start := time.Now()
 
-					// Execute the handler
-					if err := handler.Run(b, msg); err != nil {
-						log.Errorf("%s: %v", handler.Name, err)
-					}
+						// Execute the handler
+						if err := handler.Run(b, msg); err != nil {
+							log.Errorf("[%s] %v", handler.Name, err)
+						}
 
-					// Log the execution time
-					log.Infof("Handler '%s' completed in %s", handler.Name, time.Since(start))
+						// Log the execution time
+						log.Infof("Handler '%s' completed in %s", handler.Name, time.Since(start))
+					}(b, message, handler)
 				}
 			}
 		}
