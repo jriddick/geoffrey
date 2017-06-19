@@ -1,12 +1,35 @@
-hash: 7b796a68ad66f2d2228e742b4348d097cdc7819129dc8131f3eedf1cad1b4685
-updated: 2017-06-19T18:04:31.6355683+02:00
+hash: 47d653ea8015506f5dda1c86281d1f214df02e2618c99c1c2afd245341463190
+updated: 2017-06-19T19:13:59.6445276+02:00
 imports:
 - name: github.com/andybalholm/cascadia
   version: 349dd0209470eabd9514242c688c403c0926d266
 - name: github.com/bndr/gopencils
   version: 102f2a4200dcd5b943fcd09fe0098cae05f3b627
+- name: github.com/fsnotify/fsnotify
+  version: 4da3e2cfbabc9f751898f250b49f2439785783a1
+- name: github.com/hashicorp/hcl
+  version: 392dba7d905ed5d04a5794ba89f558b27e2ba1ca
+  subpackages:
+  - hcl/ast
+  - hcl/parser
+  - hcl/scanner
+  - hcl/strconv
+  - hcl/token
+  - json/parser
+  - json/scanner
+  - json/token
+- name: github.com/magiconair/properties
+  version: 51463bfca2576e06c62a8504b5c0f06d61312647
+- name: github.com/mitchellh/mapstructure
+  version: f3009df150dadf309fdee4a54ed65c124afad715
 - name: github.com/mvdan/xurls
   version: d315b61cf6727664f310fa87b3197e9faf2a8513
+- name: github.com/natefinch/lumberjack
+  version: a96e63847dc3c67d17befa69c303767e2f84e54f
+- name: github.com/pelletier/go-buffruneio
+  version: c37440a7cf42ac63b919c752ca73a85067e05992
+- name: github.com/pelletier/go-toml
+  version: fe7536c3dee2596cdd23ee9976a17c22bdaae286
 - name: github.com/PuerkitoBio/goquery
   version: e1271ee34c6a305e38566ecd27ae374944907ee9
 - name: github.com/Sirupsen/logrus
@@ -17,6 +40,16 @@ imports:
   - convey
   - convey/gotest
   - convey/reporting
+- name: github.com/spf13/afero
+  version: 9be650865eab0c12963d8753212f4f9c66cdcf12
+  subpackages:
+  - mem
+- name: github.com/spf13/cast
+  version: acbeb36b902d72a7a4c18e8f3241075e7ab763e4
+- name: github.com/spf13/jwalterweatherman
+  version: 0efa5202c04663c757d84f90f5219c1250baf94f
+- name: github.com/spf13/pflag
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/spf13/viper
   version: c1de95864d73a5465492829d7cb2dd422b19ac96
 - name: github.com/yuin/gluamapper
@@ -32,6 +65,13 @@ imports:
   version: c200b10b5d5e122be351b67af224adc6128af5bf
   subpackages:
   - unix
+- name: golang.org/x/text
+  version: 9e2f80a6ba7ed4ba13e0cd4b1f094bf916875735
+  subpackages:
+  - transform
+  - unicode/norm
+- name: gopkg.in/yaml.v2
+  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
 testImports:
 - name: github.com/gopherjs/gopherjs
   version: e34a5cd6a1bc7c4fde759f2d3039852fc68b5fcc

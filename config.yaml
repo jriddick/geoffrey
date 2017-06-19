@@ -1,0 +1,25 @@
+logs:
+  location: logs
+  level: INFO
+bots:
+  - name: geoffrey
+    host: irc.oftc.net
+    port: 6697
+    secure:
+      enable: true
+      verify: true
+    identification:
+      name: geoffrey
+      nick: geoffrey
+      user: geoffrey
+    channels:
+      - "#geoffrey-dev"
+    retries: 10
+    timings:
+      timeout: 5000
+      message: 500
+    plugins:
+      - Registration
+      - Ping
+      - Join
+      - Title

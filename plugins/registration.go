@@ -6,6 +6,10 @@ import (
 	"github.com/jriddick/geoffrey/msg"
 )
 
+func init() {
+	bot.RegisterHandler(RegistrationHandler)
+}
+
 // RegistrationHandler will register the bot to the server
 var RegistrationHandler = bot.Handler{
 	Name:        "Registration",
@@ -17,8 +21,8 @@ var RegistrationHandler = bot.Handler{
 			config := bot.Config()
 
 			// Send our registration details
-			bot.Nick(config.Nick)
-			bot.User(config.User, config.Name)
+			bot.Nick(config.Identification.Nick)
+			bot.User(config.Identification.User, config.Identification.Name)
 		}
 		return nil
 	},

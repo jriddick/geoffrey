@@ -40,11 +40,6 @@ func (m *Manager) Add(name string, bot *Bot) error {
 		return ErrBotExists
 	}
 
-	// Add existing handlers to the bot
-	for _, handler := range m.handlers {
-		bot.AddHandler(handler)
-	}
-
 	// Check if we should start the bot
 	if m.running {
 		if err := bot.Connect(); err != nil {
@@ -54,25 +49,6 @@ func (m *Manager) Add(name string, bot *Bot) error {
 
 	// Add the bot to the manager
 	m.bots[name] = bot
-
-	return nil
-}
-
-// AddHandler adds a handler that should be available on all
-// bots managed by this manager.
-func (m *Manager) AddHandler(handler Handler) error {
-	// Make sure we do not get duplicate handlers
-	if _, ok := m.handlers[handler.Name]; ok {
-		return ErrHandlerExists
-	}
-
-	// Add the bot to the list
-	m.handlers[handler.Name] = handler
-
-	// Add the handler to existing bots
-	for _, bot := range m.bots {
-		bot.AddHandler(handler)
-	}
 
 	return nil
 }

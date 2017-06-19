@@ -6,6 +6,10 @@ import (
 	"github.com/jriddick/geoffrey/msg"
 )
 
+func init() {
+	bot.RegisterHandler(PingHandler)
+}
+
 // PingHandler will respond to ping requests
 var PingHandler = bot.Handler{
 	Name:        "Ping",

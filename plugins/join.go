@@ -6,6 +6,10 @@ import (
 	"github.com/jriddick/geoffrey/msg"
 )
 
+func init() {
+	bot.RegisterHandler(JoinHandler)
+}
+
 // JoinHandler will join all configured channels
 // after bot has been registered.
 var JoinHandler = bot.Handler{

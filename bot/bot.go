@@ -23,7 +23,6 @@ type Bot struct {
 	stop         chan struct{}
 	config       Config
 	disconnected chan struct{}
-	handlers     map[string]Handler
 }
 
 // NewBot creates a new bot
@@ -33,14 +32,13 @@ func NewBot(config Config) *Bot {
 		client: irc.NewIRC(irc.Config{
 			Hostname:           config.Hostname,
 			Port:               config.Port,
-			Secure:             config.Secure,
-			InsecureSkipVerify: config.InsecureSkipVerify,
-			Timeout:            time.Second * time.Duration(config.Timeout),
+			Secure:             config.Secure.Enable,
+			InsecureSkipVerify: !config.Secure.Verify,
+			Timeout:            time.Millisecond * time.Duration(config.Timings.Timeout),
 			TimeoutLimit:       config.TimeoutLimit,
 		}),
 		config:       config,
 		stop:         make(chan struct{}),
-		handlers:     make(map[string]Handler),
 		disconnected: make(chan struct{}),
 	}
 
@@ -76,21 +74,25 @@ func (b *Bot) Handler() {
 			// Log all messages
 			log.Debugln(message.String())
 
-			// Run all handlers
-			for _, handler := range b.handlers {
-				if message.Command == handler.Event {
-					go func(bot *Bot, msg *msg.Message, handler Handler) {
-						// Mark start time
-						start := time.Now()
+			// Get all handlers for this event
+			if handlers, ok := Handlers[message.Command]; ok {
+				// Go through all configured handlers
+				for _, name := range b.config.Plugins {
+					// Run the handler if we found it
+					if handler, ok := handlers[name]; ok {
+						go func(bot *Bot, msg *msg.Message, handler Handler) {
+							// Mark start time
+							start := time.Now()
 
-						// Execute the handler
-						if err := handler.Run(b, msg); err != nil {
-							log.Errorf("[%s] %v", handler.Name, err)
-						}
+							// Execute the handler
+							if err := handler.Run(b, msg); err != nil {
+								log.Errorf("[%s] %v", handler.Name, err)
+							}
 
-						// Log the execution time
-						log.Infof("Handler '%s' completed in %s", handler.Name, time.Since(start))
-					}(b, message, handler)
+							// Log the execution time
+							log.Infof("Handler '%s' completed in %s", handler.Name, time.Since(start))
+						}(b, message, handler)
+					}
 				}
 			}
 		}
@@ -127,7 +129,7 @@ func (b *Bot) Pong(message string) {
 // update the stored nick.
 func (b *Bot) Nick(nick string) {
 	// Set the nick
-	b.config.Nick = nick
+	b.config.Identification.Nick = nick
 
 	// Send the nick
 	b.writer <- "NICK " + nick
@@ -137,8 +139,8 @@ func (b *Bot) Nick(nick string) {
 // update the stored name and user
 func (b *Bot) User(user, name string) {
 	// Set the stored user and name
-	b.config.User = user
-	b.config.Name = name
+	b.config.Identification.User = user
+	b.config.Identification.Name = name
 
 	// Send the command
 	b.writer <- "USER " + user + " 0 * :" + name
@@ -152,16 +154,4 @@ func (b *Bot) Close() {
 // Config returns the configuration
 func (b *Bot) Config() Config {
 	return b.config
-}
-
-// AddHandler adds handler to the bot
-func (b *Bot) AddHandler(handler Handler) error {
-	// Do not add duplicate handlers
-	if _, ok := b.handlers[handler.Name]; ok {
-		return ErrHandlerExists
-	}
-
-	// Add the handler to the bot
-	b.handlers[handler.Name] = handler
-	return nil
 }

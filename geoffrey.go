@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/bot"
-	"github.com/jriddick/geoffrey/plugins"
+	_ "github.com/jriddick/geoffrey/plugins"
+	"github.com/natefinch/lumberjack"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -14,40 +17,84 @@ func init() {
 
 	// Set the log level to debug
 	log.SetLevel(log.DebugLevel)
+
+	// Set the configuration information
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+
+	// Set the default values for configuration
+	viper.SetDefault("logs.location", "logs")
+	viper.SetDefault("logs.level", "INFO")
 }
 
 func main() {
-	log.Infoln("Geoffrey is now running...")
+	log.Infoln("[geoffrey] Running")
 
-	config := bot.Config{
-		Hostname:           "irc.oftc.net",
-		Port:               6697,
-		Secure:             true,
-		InsecureSkipVerify: false,
-		Nick:               "geoffrey",
-		User:               "geoffrey",
-		Name:               "geoffrey-bot",
-		Channels:           []string{"#geoffrey-dev"},
-		Timeout:            1000,
-		TimeoutLimit:       1000,
-		ReconnectLimit:     1000,
+	// Load the configuration
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Could not read configuration: %s\n", err)
 	}
 
-	// Get the bot manager
+	// Configure the logger level
+	switch viper.GetString("logs.level") {
+	case "DEBUG":
+		log.SetLevel(log.DebugLevel)
+	case "INFO":
+		log.SetLevel(log.InfoLevel)
+	case "WARN", "WARNING":
+		log.SetLevel(log.WarnLevel)
+	case "ERROR":
+		log.SetLevel(log.ErrorLevel)
+	case "FATAL":
+		log.SetLevel(log.FatalLevel)
+	case "PANIC":
+		log.SetLevel(log.PanicLevel)
+	default:
+		log.Fatalf("[geoffrey] Tried to set log level to '%s'", viper.GetString("logs.level"))
+	}
+
+	// Configure the rotating file handler
+	lumber := &lumberjack.Logger{
+		Filename:   fmt.Sprintf("%s/geoffrey.log", viper.GetString("logs.location")),
+		MaxSize:    viper.GetInt("logs.size"),
+		MaxBackups: viper.GetInt("logs.backups"),
+		MaxAge:     viper.GetInt("age"),
+	}
+
+	// Set the output to the rotating file
+	log.SetOutput(lumber)
+
+	// Set the formatting
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+	})
+
+	// Create the manager
 	manager := bot.NewManager()
 
-	// Bind our two handlers
-	manager.AddHandler(plugins.RegistrationHandler)
-	manager.AddHandler(plugins.JoinHandler)
-	manager.AddHandler(plugins.PingHandler)
+	// Get the bot configurations
+	var bots []bot.Config
 
-	// Create the first bot
-	bot := bot.NewBot(config)
-
-	// Add the bot to the manager
-	if err := manager.Add("oftc", bot); err != nil {
-		log.Fatalf("Error: %v (%s)", err, "oftc")
+	// Unmarshal the bots
+	if err := viper.UnmarshalKey("bots", &bots); err != nil {
+		log.Fatalf("Could not read configuration: %s\n", err)
 	}
+
+	// Add all bots to the manager
+	for _, config := range bots {
+		if err := manager.Add(config.BotName, bot.NewBot(config)); err != nil {
+			log.Fatalf("[%s] %v", config.BotName, err)
+		} else {
+			log.Infof("[geoffrey] Added bot '%s'", config.BotName)
+		}
+	}
+
+	// Make sure we actaully have a bot registered
+	if len(bots) < 1 {
+		log.Fatalf("[geoffrey] You need a minimum of one configured bot")
+	}
+
+	log.Infof("[geoffrey] Started")
 
 	// Listen and run
 	if err := manager.Run(); err != nil {
