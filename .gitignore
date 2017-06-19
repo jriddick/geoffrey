@@ -2,3 +2,4 @@ vendor/
 *.exe
 .vscode/
 debug
+logs/
