@@ -360,6 +360,7 @@ func TestMessageParser(t *testing.T) {
 
 func BenchmarkParseMessage_short(b *testing.B) {
 	b.ReportAllocs()
+	b.SetBytes(25)
 
 	for i := 0; i < b.N; i++ {
 		ParseMessage("COMMAND arg1 :Message\r\n")
@@ -368,6 +369,7 @@ func BenchmarkParseMessage_short(b *testing.B) {
 
 func BenchmarkParseMessage_medium(b *testing.B) {
 	b.ReportAllocs()
+	b.SetBytes(56)
 
 	for i := 0; i < b.N; i++ {
 		ParseMessage(":Namename COMMAND arg6 arg7 :Message Message Message\r\n")
@@ -376,6 +378,7 @@ func BenchmarkParseMessage_medium(b *testing.B) {
 
 func BenchmarkParseMessage_long(b *testing.B) {
 	b.ReportAllocs()
+	b.SetBytes(115)
 
 	for i := 0; i < b.N; i++ {
 		ParseMessage(":Namename!username@hostname COMMAND arg1 arg2 arg3 arg4 arg5 arg6 arg7 :Message Message Message Message Message\r\n")
@@ -384,6 +387,7 @@ func BenchmarkParseMessage_long(b *testing.B) {
 
 func BenchmarkParseMessage_max(b *testing.B) {
 	b.ReportAllocs()
+	b.SetBytes(144)
 
 	for i := 0; i < b.N; i++ {
 		ParseMessage("@tag=val;tag1;tag2;tag3;tag4 :Namename!username@hostname COMMAND arg1 arg2 arg3 arg4 arg5 arg6 arg7 :Message Message Message Message Message\r\n")
