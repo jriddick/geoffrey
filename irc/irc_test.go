@@ -16,6 +16,7 @@ var (
 		InsecureSkipVerify: false,
 		Timeout:            time.Second * 30,
 		TimeoutLimit:       5,
+		MessagesPerSecond:  120,
 	}
 )
 
@@ -99,6 +100,7 @@ func TestClient(t *testing.T) {
 				InsecureSkipVerify: defaultConfig.InsecureSkipVerify,
 				Timeout:            defaultConfig.Timeout,
 				TimeoutLimit:       defaultConfig.TimeoutLimit,
+				MessagesPerSecond:  defaultConfig.MessagesPerSecond,
 			})
 
 			// Should fail to connect
@@ -114,6 +116,7 @@ func TestClient(t *testing.T) {
 				InsecureSkipVerify: defaultConfig.InsecureSkipVerify,
 				Timeout:            defaultConfig.Timeout,
 				TimeoutLimit:       defaultConfig.TimeoutLimit,
+				MessagesPerSecond:  defaultConfig.MessagesPerSecond,
 			})
 
 			// Should fail to connect
@@ -164,6 +167,7 @@ func TestClient(t *testing.T) {
 				InsecureSkipVerify: defaultConfig.InsecureSkipVerify,
 				Timeout:            time.Second * 1,
 				TimeoutLimit:       defaultConfig.TimeoutLimit,
+				MessagesPerSecond:  defaultConfig.MessagesPerSecond,
 			})
 
 			// Should connect
