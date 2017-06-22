@@ -15,7 +15,7 @@ var RegistrationHandler = bot.Handler{
 	Name:        "Registration",
 	Description: "Registers the bot to the IRC server",
 	Event:       irc.Notice,
-	Run: func(bot *bot.Bot, msg *msg.Message) (true, error) {
+	Run: func(bot *bot.Bot, msg *msg.Message) (bool, error) {
 		if msg.Trailing == "*** Looking up your hostname..." {
 			// Get the configuration
 			config := bot.Config()
