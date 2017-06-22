@@ -8,6 +8,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/jpillora/backoff"
 	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/msg"
 )
@@ -110,11 +111,35 @@ func (b *Bot) ErrorHandler() {
 
 			// Check if timeout error occured
 			if err, ok := err.(net.Error); ok && err.Timeout() {
-				// Reconnect the bot
-				if err := b.client.Reconnect(); err != nil {
-					log.Fatalf("[geoffrey] %s", err)
-				}
+				// Try to reconnect the bot
+				b.Reconnect()
 			}
+		}
+	}
+}
+
+// Reconnect will reconnect the bot to the server
+func (b *Bot) Reconnect() {
+	// Create the reconnect rate limiter
+	rate := &backoff.Backoff{
+		Max:    5 * time.Minute,
+		Jitter: true,
+	}
+
+	for {
+		select {
+		case <-b.stop:
+			break
+		default:
+			// Reconnect to the server
+			if err := b.client.Reconnect(); err != nil {
+				// Get the exponential backoff duration and sleep for that amount until retrying
+				duration := rate.Duration()
+				log.Errorf("[geoffrey] Reconnect failed (%v) retrying in %s", err, duration)
+				time.Sleep(duration)
+			}
+
+			return
 		}
 	}
 }
