@@ -5,9 +5,9 @@ go:
 - tip
 
 install:
-- go get -u github.com/Masterminds/glide
+- go get -u github.com/golang/dep
 - go get -u github.com/mattn/goveralls
-- glide install
+- dep ensure
 
 before_script:
 - go vet $(glide nv)
