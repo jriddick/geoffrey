@@ -155,7 +155,7 @@ func TestClient(t *testing.T) {
 
 			// Check the error
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "tried to send empty message")
+			So(err.Error(), ShouldEqual, "[geoffrey] Tried to send empty message")
 		})
 
 		Convey("It should be able to disconnect", func() {
