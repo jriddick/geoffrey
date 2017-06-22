@@ -170,7 +170,7 @@ func TestClient(t *testing.T) {
 			So(client.Connect(), ShouldBeNil)
 
 			// Should disconnect
-			client.Disconnect()
+			client.Disconnect("Leaving")
 		})
 	})
 }
