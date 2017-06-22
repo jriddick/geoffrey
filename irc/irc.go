@@ -22,6 +22,7 @@ type IRC struct {
 	err          chan error
 	config       Config
 	reconnecting bool
+	connected    bool
 }
 
 // NewIRC returns a new IRC client
@@ -45,7 +46,7 @@ func (m *IRC) loopPut() {
 		case msg := <-m.put:
 			// We do not send any empty values
 			if msg == "" {
-				m.err <- fmt.Errorf("tried to send empty message")
+				m.err <- fmt.Errorf("[geoffrey] Tried to send empty message")
 				continue
 			}
 
@@ -78,9 +79,6 @@ func (m *IRC) loopGet() {
 	// Reader for the connection
 	reader := bufio.NewReaderSize(m.conn, 1024)
 
-	// The current amount of timeouts
-	timeouts := 0
-
 	for {
 		select {
 		case <-m.end:
@@ -92,20 +90,10 @@ func (m *IRC) loopGet() {
 			// Fetch the message from the server
 			raw, err := reader.ReadString('\n')
 
+			// Make sure we don't have any reading errors
 			if err != nil {
+				// Send the error that occured if we aren't currently in the process of connecting
 				if !m.reconnecting {
-					// We continue on timeout
-					if err, ok := err.(net.Error); ok && err.Timeout() {
-						// Increase the amount of timeouts
-						timeouts++
-
-						// Only continue if we haven't reached the limit
-						if timeouts < m.config.TimeoutLimit {
-							continue
-						}
-					}
-
-					// Send the error
 					m.err <- err
 				}
 
@@ -119,7 +107,7 @@ func (m *IRC) loopGet() {
 			msg, err := msg.ParseMessage(raw)
 
 			if err != nil {
-				m.err <- fmt.Errorf("%v [%s]", err, raw)
+				m.err <- fmt.Errorf("[parse] Could not parse '%s': %v", raw, err)
 				return
 			}
 
@@ -130,7 +118,7 @@ func (m *IRC) loopGet() {
 }
 
 // Disconnect will disconnect the client
-func (m *IRC) Disconnect() {
+func (m *IRC) Disconnect(message string) {
 	// Close the channels
 	if m.end != nil {
 		close(m.end)
@@ -138,6 +126,9 @@ func (m *IRC) Disconnect() {
 
 	// Wait for loops
 	m.Wait()
+
+	// Send quit message to the connection
+	m.conn.Write([]byte("QUIT :" + message + "\r\n"))
 
 	// Close the connection
 	if m.conn != nil {
@@ -163,7 +154,7 @@ func (m *IRC) Disconnect() {
 func (m *IRC) Connect() error {
 	// Don't connect if we already are connected
 	if m.conn != nil {
-		return fmt.Errorf("connection already active")
+		return fmt.Errorf("[geoffrey] Connection already active")
 	}
 
 	// Holds any encountered errors
@@ -173,7 +164,7 @@ func (m *IRC) Connect() error {
 	hostname := m.config.GetHostname()
 
 	if hostname == ":0" || hostname[0] == ':' {
-		return fmt.Errorf("need hostname and port to connect")
+		return fmt.Errorf("[geoffrey] Need hostname and port to connect")
 	}
 
 	// Create the connection
@@ -200,6 +191,11 @@ func (m *IRC) Connect() error {
 
 // Reconnect will disconnect, stop the loops and then call Connect()
 func (m *IRC) Reconnect() error {
+	// Only reconnect if we are connected
+	if m.reconnecting {
+		return nil
+	}
+
 	// Flag as reconnecting
 	m.reconnecting = true
 
