@@ -13,6 +13,7 @@ type Config struct {
 	InsecureSkipVerify bool
 	Timeout            time.Duration
 	TimeoutLimit       int
+	MessagesPerSecond  int
 }
 
 // GetHostname retuns the full hostname with port

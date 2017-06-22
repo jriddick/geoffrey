@@ -36,6 +36,7 @@ func NewBot(config Config) *Bot {
 			Secure:             config.Secure.Enable,
 			InsecureSkipVerify: !config.Secure.Verify,
 			Timeout:            time.Millisecond * time.Duration(config.Timings.Timeout),
+			MessagesPerSecond:  config.Limits.Messages,
 		}),
 		config:       config,
 		stop:         make(chan struct{}),

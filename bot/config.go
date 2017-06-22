@@ -18,6 +18,9 @@ type Config struct {
 	Timings  struct {
 		Timeout int
 	}
-	TimeoutLimit int `mapstructure:"retries"`
-	Plugins      []string
+	Limits struct {
+		Messages int `mapstructure:"rate"`
+		Timeout  int `mapstructure:"retries"`
+	}
+	Plugins []string
 }

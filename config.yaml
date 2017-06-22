@@ -14,7 +14,9 @@ bots:
       user: geoffrey
     channels:
       - "#geoffrey-dev"
-    retries: 10
+    limits:
+      retries: 10
+      rate: 120
     timings:
       timeout: 300000
       message: 500

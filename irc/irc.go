@@ -39,11 +39,17 @@ func NewIRC(config Config) *IRC {
 func (m *IRC) loopPut() {
 	defer m.Done()
 
+	// Calculate the duration we have to wait to honor MessagesPerSecond
+	wait := time.Duration(1000/m.config.MessagesPerSecond) * time.Millisecond
+
 	for {
 		select {
 		case <-m.end:
 			return
 		case msg := <-m.put:
+			// Wait for the pre-determined time before sending
+			time.Sleep(wait)
+
 			// We do not send any empty values
 			if msg == "" {
 				m.err <- fmt.Errorf("[geoffrey] Tried to send empty message")
