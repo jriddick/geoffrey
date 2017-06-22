@@ -62,40 +62,6 @@ func (b *Bot) Connect() error {
 
 // Handler will start processing messages
 func (b *Bot) Handler() {
-	// Handle error messages in another routine
-	go func(bot *Bot) {
-		for {
-			select {
-			case <-b.stop:
-				break
-			case err := <-b.client.Errors():
-				// Log the error that we got
-				log.Errorf("[geoffrey] %v", err)
-
-				// Check if timeout error occured
-				if err, ok := err.(net.Error); ok && err.Timeout() {
-					// Reconnect the bot
-					if err := b.client.Reconnect(); err != nil {
-						log.Fatalf("[geoffrey] %s", err)
-					}
-				}
-			}
-		}
-	}(b)
-
-	// Ping the server at specific interval
-	go func(bot *Bot) {
-		ticker := time.NewTicker(120 * time.Second)
-		for {
-			select {
-			case <-b.stop:
-				break
-			case <-ticker.C:
-				b.Ping(fmt.Sprintf("%d", time.Now().UnixNano()))
-			}
-		}
-	}(b)
-
 	// Handle disconnects and regular error messages
 	for {
 		select {
@@ -130,6 +96,47 @@ func (b *Bot) Handler() {
 			}
 		}
 	}
+}
+
+// ErrorHandler will handle all errors
+func (b *Bot) ErrorHandler() {
+	for {
+		select {
+		case <-b.stop:
+			break
+		case err := <-b.client.Errors():
+			// Log the error that we got
+			log.Errorf("[geoffrey] %v", err)
+
+			// Check if timeout error occured
+			if err, ok := err.(net.Error); ok && err.Timeout() {
+				// Reconnect the bot
+				if err := b.client.Reconnect(); err != nil {
+					log.Fatalf("[geoffrey] %s", err)
+				}
+			}
+		}
+	}
+}
+
+// Pinger will ping the server every 2 minutes
+func (b *Bot) Pinger() {
+	ticker := time.NewTicker(120 * time.Second)
+	for {
+		select {
+		case <-b.stop:
+			break
+		case <-ticker.C:
+			b.Ping(fmt.Sprintf("%d", time.Now().UnixNano()))
+		}
+	}
+}
+
+// Run will start all handlers
+func (b *Bot) Run() {
+	go b.ErrorHandler()
+	go b.Handler()
+	go b.Pinger()
 }
 
 // Send will send the given message to the given receiver

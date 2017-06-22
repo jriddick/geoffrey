@@ -85,8 +85,8 @@ func (m *Manager) Start() error {
 			return err
 		}
 
-		// Start handling all information in another thread
-		go bot.Handler()
+		// Run the bot in another thread
+		go bot.Run()
 	}
 
 	m.running = true
