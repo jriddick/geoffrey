@@ -16,7 +16,7 @@ var JoinHandler = bot.Handler{
 	Name:        "Join",
 	Description: "Joins all pre-defined channels after registration",
 	Event:       irc.Welcome,
-	Run: func(bot *bot.Bot, msg *msg.Message) error {
+	Run: func(bot *bot.Bot, msg *msg.Message) (bool, error) {
 		// Get the configuration
 		config := bot.Config()
 
@@ -25,6 +25,6 @@ var JoinHandler = bot.Handler{
 			bot.Join(channel)
 		}
 
-		return nil
+		return true, nil
 	},
 }

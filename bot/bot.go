@@ -85,12 +85,12 @@ func (b *Bot) Handler() {
 							start := time.Now()
 
 							// Execute the handler
-							if err := handler.Run(b, msg); err != nil {
+							if ran, err := handler.Run(b, msg); err != nil {
 								log.Errorf("[%s] %v", handler.Name, err)
+							} else if ran {
+								// Log the execution time
+								log.Infof("Handler '%s' completed in %s", handler.Name, time.Since(start))
 							}
-
-							// Log the execution time
-							log.Infof("Handler '%s' completed in %s", handler.Name, time.Since(start))
 						}(b, message, handler)
 					}
 				}

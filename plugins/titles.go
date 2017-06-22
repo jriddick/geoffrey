@@ -33,13 +33,13 @@ var TitleHandler = base.Handler{
 	Name:        "Title",
 	Description: "Extracts title and website information upon detecting URLs",
 	Event:       irc.Message,
-	Run: func(bot *base.Bot, msg *msg.Message) error {
+	Run: func(bot *base.Bot, msg *msg.Message) (bool, error) {
 		// Get configuration
 		config := bot.Config()
 
 		// Check if channel message
 		if msg.Params[0] == config.Identification.Nick || msg.Prefix.Name == "nibbler" {
-			return nil
+			return false, nil
 		}
 
 		// Extract the urls
@@ -47,6 +47,11 @@ var TitleHandler = base.Handler{
 
 		// Add the amount of urls needed
 		wg.Add(len(urls))
+
+		// Check if we have nothing to do
+		if len(urls) < 1 {
+			return false, nil
+		}
 
 		// Download the information from the webpage
 		for _, text := range urls {
@@ -87,6 +92,6 @@ var TitleHandler = base.Handler{
 		// Wait for it to complete
 		wg.Wait()
 
-		return nil
+		return true, nil
 	},
 }

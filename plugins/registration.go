@@ -15,7 +15,7 @@ var RegistrationHandler = bot.Handler{
 	Name:        "Registration",
 	Description: "Registers the bot to the IRC server",
 	Event:       irc.Notice,
-	Run: func(bot *bot.Bot, msg *msg.Message) error {
+	Run: func(bot *bot.Bot, msg *msg.Message) (true, error) {
 		if msg.Trailing == "*** Looking up your hostname..." {
 			// Get the configuration
 			config := bot.Config()
@@ -23,7 +23,10 @@ var RegistrationHandler = bot.Handler{
 			// Send our registration details
 			bot.Nick(config.Identification.Nick)
 			bot.User(config.Identification.User, config.Identification.Name)
+
+			return true, nil
 		}
-		return nil
+
+		return false, nil
 	},
 }

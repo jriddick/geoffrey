@@ -6,7 +6,7 @@ import (
 
 // HandlerFunc is function signature for OnEvent
 // handlers.
-type HandlerFunc func(*Bot, *msg.Message) error
+type HandlerFunc func(*Bot, *msg.Message) (bool, error)
 
 // Handler is an OnEvent handler
 type Handler struct {

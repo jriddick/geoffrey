@@ -18,7 +18,7 @@ var PongHandler = bot.Handler{
 	Name:        "Pong",
 	Description: "Handles pong responses from the server",
 	Event:       "PONG",
-	Run: func(bot *bot.Bot, msg *msg.Message) error {
+	Run: func(bot *bot.Bot, msg *msg.Message) (bool, error) {
 		if num, err := strconv.ParseInt(msg.Trailing, 10, 64); err == nil {
 			// Get the time it was sent
 			sent := time.Unix(0, num)
@@ -27,6 +27,6 @@ var PongHandler = bot.Handler{
 			log.Infof("[pong] Latency is %s", time.Since(sent))
 		}
 
-		return nil
+		return true, nil
 	},
 }
