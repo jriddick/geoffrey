@@ -1,6 +1,6 @@
 logs:
   location: logs
-  level: INFO
+  level: DEBUG
 bots:
   - name: geoffrey
     host: irc.oftc.net
@@ -16,10 +16,11 @@ bots:
       - "#geoffrey-dev"
     retries: 10
     timings:
-      timeout: 5000
+      timeout: 300000
       message: 500
     plugins:
       - Registration
       - Ping
       - Join
       - Title
+      - Pong
