@@ -17,3 +17,4 @@ import:
 - package: github.com/spf13/viper
 - package: github.com/natefinch/lumberjack
   version: ^2.1.0
+- package: github.com/jpillora/backoff

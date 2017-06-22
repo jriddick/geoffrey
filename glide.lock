@@ -1,5 +1,5 @@
-hash: 47d653ea8015506f5dda1c86281d1f214df02e2618c99c1c2afd245341463190
-updated: 2017-06-19T19:13:59.6445276+02:00
+hash: 2e9370e2738643d39826b1f7672b2370c5eeeed524975d5f22754747e25e41ee
+updated: 2017-06-22T09:14:21.243746298+02:00
 imports:
 - name: github.com/andybalholm/cascadia
   version: 349dd0209470eabd9514242c688c403c0926d266
@@ -18,6 +18,8 @@ imports:
   - json/parser
   - json/scanner
   - json/token
+- name: github.com/jpillora/backoff
+  version: 06c7a16c845dc8e0bf575fafeeca0f5462f5eb4d
 - name: github.com/magiconair/properties
   version: 51463bfca2576e06c62a8504b5c0f06d61312647
 - name: github.com/mitchellh/mapstructure
