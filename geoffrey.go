@@ -1,13 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/bot"
 	_ "github.com/jriddick/geoffrey/plugins"
-	"github.com/natefinch/lumberjack"
 	"github.com/spf13/viper"
 )
 
@@ -52,22 +50,6 @@ func main() {
 	default:
 		log.Fatalf("[geoffrey] Tried to set log level to '%s'", viper.GetString("logs.level"))
 	}
-
-	// Configure the rotating file handler
-	lumber := &lumberjack.Logger{
-		Filename:   fmt.Sprintf("%s/geoffrey.log", viper.GetString("logs.location")),
-		MaxSize:    viper.GetInt("logs.size"),
-		MaxBackups: viper.GetInt("logs.backups"),
-		MaxAge:     viper.GetInt("age"),
-	}
-
-	// Set the output to the rotating file
-	log.SetOutput(lumber)
-
-	// Set the formatting
-	log.SetFormatter(&log.TextFormatter{
-		DisableColors: true,
-	})
 
 	// Create the manager
 	manager := bot.NewManager()
