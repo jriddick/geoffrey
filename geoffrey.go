@@ -64,7 +64,11 @@ func main() {
 
 	// Add all bots to the manager
 	for _, config := range bots {
-		if err := manager.Add(config.BotName, bot.NewBot(config)); err != nil {
+		bot, err := bot.NewBot(config)
+		if err != nil {
+			log.Fatalf("[%s] %v", config.BotName, err)
+		}
+		if err := manager.Add(config.BotName, bot); err != nil {
 			log.Fatalf("[%s] %v", config.BotName, err)
 		} else {
 			log.Infof("[geoffrey] Added bot '%s'", config.BotName)

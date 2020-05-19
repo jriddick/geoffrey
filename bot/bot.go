@@ -7,6 +7,7 @@ import (
 
 	"time"
 
+	badger "github.com/dgraph-io/badger/v2"
 	"github.com/jpillora/backoff"
 	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/msg"
@@ -25,10 +26,18 @@ type Bot struct {
 	stop         chan struct{}
 	config       Config
 	disconnected chan struct{}
+	db           *badger.DB
 }
 
 // NewBot creates a new bot
-func NewBot(config Config) *Bot {
+func NewBot(config Config) (*Bot, error) {
+	// Open badger
+	db, err := badger.Open(badger.DefaultOptions(config.DatabasePath))
+
+	if err != nil {
+		return nil, err
+	}
+
 	// Create the bot
 	bot := &Bot{
 		client: irc.NewIRC(irc.Config{
@@ -42,9 +51,10 @@ func NewBot(config Config) *Bot {
 		config:       config,
 		stop:         make(chan struct{}),
 		disconnected: make(chan struct{}),
+		db:           db,
 	}
 
-	return bot
+	return bot, nil
 }
 
 // Connect will connect the bot to the server
@@ -219,4 +229,9 @@ func (b *Bot) Close() {
 // Config returns the configuration
 func (b *Bot) Config() Config {
 	return b.config
+}
+
+// Db returns the active database for this bot
+func (b *Bot) Db() *badger.DB {
+	return b.db
 }
