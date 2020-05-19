@@ -10,7 +10,7 @@ before_script:
 - go vet ./...
 
 script:
-- goveralls -repotoken $COVERALLS_TOKEN
+- goveralls -service=travis-ci
 
 before_deploy:
 - make zip
@@ -29,7 +29,3 @@ deploy:
     condition: $TRAVIS_GO_VERSION == "1.8"
   api_key:
     secure: t7/mUrgN6ec3ox2Jd2TvrnBme/8d74PIVNOmp/AB+oqrXD0HKa/iF0DI7aXQC440C43lpzLIv65Wb6SPpNezy2V/MbMEsWXpwiSl+CTcoFP6Fg/WK0+tKkuNZT7CfQ0KU1PBx5RSHTp6H0ZUi/1WIgMYrEU+RppdnSXq2fvoM25JIxn3Go36xMsVsAMnSIY1+Z9Uppj+8b4D93UneSGaCUSDnAny1gaHYhqucjMuedQKTeOFpu3ux2oc4/09ubFHi6VPdOCLHebbUcSUfC+EWf3D6znxOBmzqaV/yz+7FqjBsAPpE+WbO0mGyaI6u+rE5AUzkh+pgHC4KH02UdC7OMtOVN36axnzGTuLyEdB0vcS7zOHWGMNkNT9jjxfYMDJimsgPidPU57/1Dr7FoPDxdPcUQqydpY1+8FMLh3eVU/prU2kheGK/kD/Yc37nVTLi+nbD0g/lkcCTImzZAFbHFQtJdvdXD92UdFW/Gy2jKAOxJb3S2JTlE9P+kzK/9g0QO0X6r3veZQP3yWPxO27VbmlaPWSzSnoWSmzgsDJtvjFC6QcfVdpp12uR2LcdIb4lWzymK1TyIO0ktHzzhVfHmFFE24KDpWX3uWKJcpGPX2ZJQ+NO5nZ/a8VlV0NHuvPn6+utjjmXvfJmbEiuuK4b9PEpl5Vkz126x4QEzai5HM=
-    
-env:
-  global:
-    secure: r+ftY28BB5j2ThVlZtO14p09VtQUXoSBpR33woh8h8KaVSwmybU/MeFNmT7y+diX5NJZp63Cbm5gC8YarrtGzRQNECk4XrkFAeh/sQ3CL8ffJD9n1j+Jn+ZVs3zyeTX2Da8JCDszBSIzBbj7+i6VpaJ2B1D92tjVhEWhcKCn262LtrngeWfafG/B3g+7UB3CBbNWEos23gZsjBGaRkTNseXxD2zidgwaeSvEHMs38x4bD7S43uy6PbNiegsRMDCf2vQuzoDoAWXPJ0Qm3VivLvPkGki0Uz1p/E5VqdRbFcbub1G+HYIQEGxNbOAyKdTP6DSsgpNhln7nEQknacFkKmBZ5X62An5IR/aNCHcPZ4VxNZl2BrHbjDUCny275uNq3CvNXE5vpjFlX2+bIVUdw/Pvd1OvneXDF4DYWXXnNq8HmWdRmiLY+dumIFZ6cyI4OUAqQtLiHg3cp+DU68xahVSb354Unj+FrRmAIGECJoAI5fI0i4RtSpGg7VMWi/Lu6LdXJMU5RZS0WPzHrva8hnbvqeHOAsLKwf+69+DEPFXGN5ygLl7PAEk0FjIEZj8CDIvMQmj+dw1KgRVleJHXx3VZPZ71PbTGqoIkBBs4UG6Prweoo0iTzPjkjt0iBY5+BOJMAHsUPzwVBmWmNaQbukUcSU47gvlWJ/n1UjhHDS0=
