@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/jriddick/geoffrey/bot"
 	_ "github.com/jriddick/geoffrey/plugins"
@@ -34,7 +35,7 @@ func main() {
 	}
 
 	// Configure the logger level
-	switch viper.GetString("logs.level") {
+	switch strings.ToUpper(viper.GetString("logs.level")) {
 	case "DEBUG":
 		log.SetLevel(log.DebugLevel)
 	case "INFO":
