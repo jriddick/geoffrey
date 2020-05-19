@@ -4,3 +4,6 @@ vendor/
 debug
 logs/
 geoffrey
+db/
+config.yaml
+config.yml
