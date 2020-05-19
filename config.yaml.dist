@@ -1,28 +1,29 @@
 logs:
     location: logs
     level: DEBUG
-  bots:
-    - name: geoffrey
-      host: irc.oftc.net
-      port: 6697
-      secure:
-        enable: true
-        verify: true
-      identification:
-        name: geoffrey
-        nick: geoffrey
-        user: geoffrey
-      channels:
-        - "#geoffrey-dev"
-      limits:
-        retries: 10
-        rate: 120
-      timings:
-        timeout: 300000
-        message: 500
-      plugins:
-        - Registration
-        - Ping
-        - Join
-        - Title
-        - Pong
+bots:
+  - name: geoffrey
+    host: irc.oftc.net
+    port: 6697
+    secure:
+      enable: true
+      verify: true
+    identification:
+      name: geoffrey
+      nick: geoffrey
+      user: geoffrey
+    channels:
+      - "#geoffrey-dev"
+    limits:
+      retries: 10
+      rate: 120
+    timings:
+      timeout: 300000
+      message: 500
+    plugins:
+      - Registration
+      - Ping
+      - Join
+      - Title
+      - Pong
+    database: ./db
