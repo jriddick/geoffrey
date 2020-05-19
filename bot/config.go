@@ -22,6 +22,7 @@ type Config struct {
 		Messages int `mapstructure:"rate"`
 		Timeout  int `mapstructure:"retries"`
 	}
-	Plugins      []string
-	DatabasePath string
+	Plugins  []string
+	Database string
+	Settings map[interface{}]interface{}
 }

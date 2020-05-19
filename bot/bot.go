@@ -32,7 +32,7 @@ type Bot struct {
 // NewBot creates a new bot
 func NewBot(config Config) (*Bot, error) {
 	// Open badger
-	db, err := badger.Open(badger.DefaultOptions(config.DatabasePath))
+	db, err := badger.Open(badger.DefaultOptions(config.Database))
 
 	if err != nil {
 		return nil, err
@@ -95,9 +95,9 @@ func (b *Bot) Handler() {
 							start := time.Now()
 
 							// Execute the handler
-							if ran, err := handler.Run(b, msg); err != nil {
+							if _, err := handler.Run(b, msg); err != nil {
 								log.Errorf("[%s] %v", handler.Name, err)
-							} else if ran {
+							} else {
 								// Log the execution time
 								log.Infof("Handler '%s' completed in %s", handler.Name, time.Since(start))
 							}
@@ -167,9 +167,31 @@ func (b *Bot) Pinger() {
 	}
 }
 
+// InitHandlers will run Init on all registered handlers
+func (b *Bot) InitHandlers() {
+	for _, enabledHandler := range b.config.Plugins {
+		if handler, ok := HandlerList[enabledHandler]; ok {
+			if handler.Init != nil {
+				// Mark start time
+				start := time.Now()
+
+				if _, err := handler.Init(b); err != nil {
+					log.Fatalf("[geoffrey] Could not initialize plugin '%s': %v", enabledHandler, err)
+				} else {
+					log.Infof("[geoffrey] Initialized handler '%s' in %s", enabledHandler, time.Since(start))
+				}
+				break
+			}
+		} else {
+			log.Errorf("[geoffrey] Bot '%s' has enabled non-existing plugin '%s'", b.config.BotName, enabledHandler)
+		}
+	}
+}
+
 // Run will start all handlers
 func (b *Bot) Run() {
 	go b.ErrorHandler()
+	b.InitHandlers()
 	go b.Handler()
 	go b.Pinger()
 }

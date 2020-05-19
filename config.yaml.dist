@@ -27,3 +27,8 @@ bots:
       - Title
       - Pong
     database: ./db
+    settings:
+      title:
+        blacklist:
+          - youtube.com
+          - reddit.com
