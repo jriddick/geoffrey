@@ -10,11 +10,11 @@ import (
 	"regexp"
 
 	"github.com/PuerkitoBio/goquery"
-	log "github.com/Sirupsen/logrus"
 	base "github.com/jriddick/geoffrey/bot"
 	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/msg"
 	"github.com/mvdan/xurls"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {

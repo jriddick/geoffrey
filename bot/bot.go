@@ -7,10 +7,10 @@ import (
 
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/jpillora/backoff"
 	"github.com/jriddick/geoffrey/irc"
 	"github.com/jriddick/geoffrey/msg"
+	log "github.com/sirupsen/logrus"
 )
 
 // MessageHandler is the function type for

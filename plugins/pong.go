@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/bot"
 	"github.com/jriddick/geoffrey/msg"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {

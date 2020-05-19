@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/jriddick/geoffrey/bot"
 	_ "github.com/jriddick/geoffrey/plugins"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
