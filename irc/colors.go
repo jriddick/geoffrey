@@ -25,7 +25,7 @@ const (
 
 // Foreground sets foreground color of the text to the given color
 func Foreground(text string, code int) string {
-	return fmt.Sprintf("\x03%d%s\x03", code, text)
+	return fmt.Sprintf("\x03%d​%s\x03", code, text)
 }
 
 // Bold makes the text bold
