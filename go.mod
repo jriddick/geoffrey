@@ -8,7 +8,9 @@ require (
 	github.com/dgraph-io/badger v1.6.1
 	github.com/dgraph-io/badger/v2 v2.0.3
 	github.com/fsnotify/fsnotify v1.4.9
+	github.com/golangci/golangci-lint v1.27.0 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1
+	github.com/hako/durafmt v0.0.0-20191009132224-3f39dc1ed9f4
 	github.com/hashicorp/hcl v1.0.0
 	github.com/jpillora/backoff v1.0.0
 	github.com/jtolds/gls v4.20.0+incompatible
@@ -28,6 +30,7 @@ require (
 	golang.org/x/net v0.0.0-20200519113804-d87ec0cfa476
 	golang.org/x/sys v0.0.0-20200519105757-fe76b779f299
 	golang.org/x/text v0.3.2
+	google.golang.org/api v0.24.0
 	gopkg.in/ini.v1 v1.56.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 )

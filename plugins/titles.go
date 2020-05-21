@@ -103,7 +103,7 @@ var TitleHandler = base.Handler{
 		config := bot.Config()
 
 		// Check if channel message
-		if msg.Params[0] == config.Identification.Nick || msg.Prefix.Name == "nibbler" {
+		if msg.Params[0] == config.Identification.Nick || msg.Prefix.Name == "nibbler" || msg.Prefix.Name == "geoffrey-bot" {
 			return false, nil
 		}
 
