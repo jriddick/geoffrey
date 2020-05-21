@@ -21,7 +21,7 @@ func init() {
 	base.RegisterHandler(YouTubeHandler)
 }
 
-const developerKey = ""
+var developerKey = ""
 
 // Waiter so we can wait for it to finish before returning
 // var wg sync.WaitGroup
@@ -29,7 +29,7 @@ const developerKey = ""
 // Regex replacer for cleaning titles
 // var replacer = regexp.MustCompile("[\r\n]+")
 
-// TitleHandler extracts title from posted links and sends
+// YouTubeHandler extracts title from posted links and sends
 // them to the channel.
 var YouTubeHandler = base.Handler{
 	Name:        "YouTube",
@@ -39,10 +39,20 @@ var YouTubeHandler = base.Handler{
 		// Get configuration
 		config := bot.Config()
 
+		// Get the blacklist list from the configs
+		if settings, ok := config.Settings["youtube"]; ok {
+			if key, ok := settings.(map[interface{}]interface{})["key"]; ok {
+				if authenticationKey, ok := key.(string); ok {
+					developerKey = authenticationKey
+				}
+			}
+		}
+
 		service, err := youtube.NewService(context.Background(), option.WithAPIKey(developerKey))
 
 		if err != nil {
-			log.Fatalf("Error creating new YouTube client: %v", err)
+			log.Errorf("Error creating new YouTube client: %v", err)
+			return false, err
 		}
 
 		// Check if channel message

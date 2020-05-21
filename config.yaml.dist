@@ -32,3 +32,5 @@ bots:
         blacklist:
           - youtube.com
           - reddit.com
+      youtube:
+        key: YOUR_API_KEY
