@@ -67,9 +67,8 @@ var CurrencyHandler = base.Handler{
 						returnData = fmt.Sprintf("%s %s in %s: %v", cData[1], cData[2], cData[3], cValue)
 					}
 				}
+				bot.Send(channel, returnData)
 			}
-
-			bot.Send(channel, returnData)
 		}(bot, msg.Params[0])
 		return true, nil
 	},
