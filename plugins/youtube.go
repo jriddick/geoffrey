@@ -82,12 +82,26 @@ var YouTubeHandler = base.Handler{
 						uri.Scheme = "http"
 					}
 
-					if !strings.Contains(uri.Host, "youtube") {
+					if !strings.Contains(uri.Host, "youtube") && !strings.Contains(uri.Host, "youtu.be") {
 						return
 					}
 
 					URL := uri.String()
-					var videoID = strings.Split(URL, "=")[1]
+					var videoID string
+
+					if strings.Contains(uri.Host, "youtube") {
+						var tempID string
+
+						tempID = strings.Split(URL, "=")[1]
+						tempID = strings.Split(tempID, "&")[0]
+
+						videoID = tempID
+					}
+
+					if strings.Contains(uri.Host, "youtu.be") {
+						videoID = strings.Split(URL, "https://youtu.be/")[1]
+					}
+
 					// Make the API call to YouTube.
 					call := service.Videos.List("snippet,contentDetails").Id(videoID)
 
